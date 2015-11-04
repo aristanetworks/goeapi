@@ -30,7 +30,7 @@
 // IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-package api
+package module
 
 import (
 	"regexp"

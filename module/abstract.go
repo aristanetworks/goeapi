@@ -36,7 +36,7 @@
 // All API modules will ultimately derive from AbstractBaseEntity which provides
 // some common functions to make building API modules easier.
 
-package api
+package module
 
 import "github.com/aristanetworks/goeapi"
 

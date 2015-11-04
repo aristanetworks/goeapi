@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aristanetworks/goeapi"
-	"github.com/aristanetworks/goeapi/api"
+	"github.com/aristanetworks/goeapi/module"
 )
 
 func main() {
@@ -15,12 +15,12 @@ func main() {
 	conf := node.RunningConfig()
 	fmt.Println(conf)
 
-	var showversion api.ShowVersion
+	var showversion module.ShowVersion
 	handle, _ := node.GetHandle("json")
 	handle.Enable(&showversion)
 	fmt.Println("\nVersion:", showversion.Version)
 
-	s := api.Show(node)
+	s := module.Show(node)
 	showData := s.ShowVersion()
 	fmt.Printf("\nModelname         : %s\n", showData.ModelName)
 	fmt.Printf("Internal Version  : %s\n", showData.InternalVersion)
@@ -34,7 +34,7 @@ func main() {
 	fmt.Printf("Internal Build ID : %s\n", showData.InternalBuildID)
 	fmt.Printf("Hardware Revision : %s\n", showData.HardwareRevision)
 
-	sys := api.System(node)
+	sys := module.System(node)
 	if ok := sys.SetHostname("Ladie"); !ok {
 		fmt.Printf("SetHostname Failed\n")
 	}

@@ -15,10 +15,10 @@ test:
 	@$(MAKE) vet
 
 testsys:
-	$(GO) test ./ ./api $(GOTEST_FLAGS) -run SystemTest$
+	$(GO) test ./ ./module $(GOTEST_FLAGS) -run SystemTest$
 
 testunit:
-	$(GO) test ./ ./api $(GOTEST_FLAGS) -run UnitTest$
+	$(GO) test ./ ./module $(GOTEST_FLAGS) -run UnitTest$
 
 updatedeps:
 	$(GO) get -u github.com/mitchellh/mapstructure
@@ -29,7 +29,7 @@ coverage:
 		$(GO) get -u golang.org/x/tools/cmd/cover; \
 	fi
 	$(GO) test $(GOPKG) -coverprofile=$(COV_FILE)
-	$(GO) test $(GOPKG)/api -coverprofile=coverage_api.out
+	$(GO) test $(GOPKG)/module -coverprofile=coverage_api.out
 	@tail -n +2 coverage_api.out >> $(COV_FILE)
 	$(GO) tool cover -html=$(COV_FILE)
 	$(GO) tool cover -func=$(COV_FILE) > $(COV_FUNC_OUT)
