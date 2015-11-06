@@ -243,7 +243,7 @@ func (s *STPInterfaceEntity) SetBPDUGuard(name string, enable bool) bool {
 	if enable {
 		param = "enable"
 	}
-	cmd := s.CommandBuilder("spanning-tree bpduguard", param, false, enable)
+	cmd := s.CommandBuilder("spanning-tree bpduguard", param, false, true)
 	return s.ConfigureInterface(name, cmd)
 }
 

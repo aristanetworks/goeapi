@@ -74,9 +74,10 @@ func System(node *goeapi.Node) *SystemEntity {
 // Returns:
 //  SystemConfig: Represents the node's system configuration
 func (s *SystemEntity) Get() SystemConfig {
+	config := s.Config()
 	var resource = make(SystemConfig)
-	resource["hostname"] = s.parseHostname()
-	resource["iprouting"] = strconv.FormatBool(s.parseIPRouting())
+	resource["hostname"] = parseHostname(config)
+	resource["iprouting"] = strconv.FormatBool(parseIPRouting(config))
 	return resource
 }
 
@@ -164,11 +165,22 @@ func (s *SystemEntity) SetHostnameDefault() bool {
 // Args:
 //  value(bool): True if ip routing should be enabled or False if
 //               ip routing should be disabled
-//  default (bool): Controls the use of the default keyword
 //
 // Returns:
 //  bool: True if the commands completed successfully otherwise False
-func (s *SystemEntity) SetIPRouting(value string, def bool, enable bool) bool {
-	cmd := s.CommandBuilder("ip routing", value, def, enable)
+func (s *SystemEntity) SetIPRouting(value string, enable bool) bool {
+	cmd := s.CommandBuilder("ip routing", value, false, enable)
+	return s.Configure(cmd)
+}
+
+// SetIPRoutingDefault Configures the default tate of global ip routing
+//
+// EosVersion:
+//    4.13.7M
+//
+// Returns:
+//  bool: True if the commands completed successfully otherwise False
+func (s *SystemEntity) SetIPRoutingDefault(value string) bool {
+	cmd := s.CommandBuilder("ip routing", value, true, false)
 	return s.Configure(cmd)
 }

@@ -80,6 +80,12 @@ func (b *BgpConfig) MaximumEcmpPaths() string {
 	return b.maxEcmpPaths
 }
 
+// MaximumEcmpPaths returns the configured value for
+// BGP max ECMP paths. Empty string is returned if no value set.
+func (b *BgpConfig) Networks() []map[string]string {
+	return b.networks
+}
+
 // BGPEntity provides a configuration resource for Bgp
 type BGPEntity struct {
 	neighbors *BgpNeighborsEntity

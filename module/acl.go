@@ -369,14 +369,14 @@ func (a *AclEntity) AddEntry(name string, action string, addr string,
 //
 // Args:
 //  name (string): The ACL name to update on the node.
-//  seqno (string): The sequence number of the entry in the ACL to remove.
+//  seqno (int): The sequence number of the entry in the ACL to remove.
 //
 // Returns:
 //  returns true if the command complete successfully
-func (a *AclEntity) RemoveEntry(name string, seqno string) bool {
+func (a *AclEntity) RemoveEntry(name string, seqno int) bool {
 	var commands = []string{
 		"ip access-list standard " + name,
-		"no " + seqno,
+		"no " + strconv.Itoa(seqno),
 		"exit",
 	}
 	return a.Configure(commands...)

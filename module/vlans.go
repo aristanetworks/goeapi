@@ -335,6 +335,9 @@ func (v *VlanEntity) SetNameDefault(vid string) bool {
 // Returns:
 //  True if the operation was successful otherwise False
 func (v *VlanEntity) SetState(vid string, value string) bool {
+	if value == "" {
+		return v.ConfigureVlan(vid, "no state")
+	}
 	return v.ConfigureVlan(vid, "state "+value)
 }
 
