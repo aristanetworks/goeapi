@@ -36,6 +36,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestUsersFuntions_UnitTest(t *testing.T) {
 	isPrivTests := []struct {
 		in   int
@@ -221,6 +226,217 @@ func TestUsersParseUsername_UnitTest(t *testing.T) {
 	}
 }
 
+func TestUsersGet_UnitTest(t *testing.T) {
+	initFixture()
+	user := User(dummyNode)
+	config := user.Get("test")
+	if config == nil {
+		t.Fatalf("No data returned from Get()")
+	}
+	if config.UserName() != "test" || config.Privilege() != "10" ||
+		config.Role() != "" || config.Nopassword() != "true" ||
+		config.Format() != "" || config.Secret() != "" ||
+		config.SSHKey() != "" {
+		t.Fatalf("Get() retuned invalid data: %#v", config)
+	}
+}
+
+func TestUsersGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	user := User(dummyNode)
+	config := user.GetAll()
+	if config == nil {
+		t.Fatalf("GetAll() retuned nil")
+	}
+	if _, found := config["test"]; !found {
+		t.Fatalf("GetAll() retuned invalid data: %#v", config)
+	}
+}
+
+func TestUsersGetSectionNil_UnitTest(t *testing.T) {
+	initFixture()
+	user := User(dummyNode)
+	if section := user.GetSection(); section == "" {
+		t.Fatalf("No section returned from GetSection()")
+	}
+}
+
+func TestUsersCreate_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name   string
+		nopass bool
+		secret string
+		enc    string
+		want   string
+		rc     bool
+	}{
+		{"tester", false, "1password", "cleartext", "username tester secret 0 1password", true},
+		{"admin", false, "2password", "md5", "username admin secret 5 2password", true},
+		{"co-op", false, "3password", "sha512", "username co-op secret sha512 3password", true},
+		{"test", false, "", "cleartext", "username test secret 0 ", false},
+		{"", false, "4password", "cleartext", "username  secret 0 4password", true},
+		{"scooby", false, "5password", "invalidType", "", false},
+		{"scooby", false, "5password", "", "", false},
+		{"", true, "", "", "username  nopassword", true},
+		{"tester", true, "", "", "username tester nopassword", true},
+		{"scooby", true, "", "", "username scooby nopassword", true},
+		{"co-op", true, "", "", "username co-op nopassword", true},
+	}
+	for _, tt := range tests {
+		if ok, _ := user.Create(tt.name, tt.nopass, tt.secret, tt.enc); ok != tt.rc {
+			t.Fatalf("Create(%s, %t, %s, %s) failed", tt.name, tt.nopass, tt.secret, tt.enc)
+		}
+		if tt.rc {
+			cmds := dummyConnection.GetCommands()
+			if cmds[len(cmds)-1] != tt.want {
+				t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+			}
+		}
+	}
+}
+func TestUsersCreateWithSecret_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name   string
+		secret string
+		enc    string
+		want   string
+		rc     bool
+	}{
+		{"tester", "1password", "cleartext", "username tester secret 0 1password", true},
+		{"admin", "2password", "md5", "username admin secret 5 2password", true},
+		{"co-op", "3password", "sha512", "username co-op secret sha512 3password", true},
+		{"test", "", "cleartext", "username test secret 0 ", true},
+		{"", "4password", "cleartext", "username  secret 0 4password", true},
+		{"scooby", "5password", "invalidType", "", false},
+		{"scooby", "5password", "", "", false},
+	}
+	for _, tt := range tests {
+		if ok, _ := user.CreateWithSecret(tt.name, tt.secret, tt.enc); ok != tt.rc {
+			t.Fatalf("CreateWithSecret(%s, %s, %s) failed", tt.name, tt.secret, tt.enc)
+		}
+		if tt.rc {
+			cmds := dummyConnection.GetCommands()
+			if cmds[len(cmds)-1] != tt.want {
+				t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+			}
+		}
+	}
+}
+func TestUsersCreateWithNoPassword_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"", "username  nopassword"},
+		{"tester", "username tester nopassword"},
+		{"scooby", "username scooby nopassword"},
+		{"co-op", "username co-op nopassword"},
+	}
+	for _, tt := range tests {
+		if ok := user.CreateWithNoPassword(tt.name); !ok {
+			t.Fatalf("CreateWithNoPassword(%s) failed", tt.name)
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+func TestUsersDelete_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"", "no username "},
+		{"tester", "no username tester"},
+		{"scooby", "no username scooby"},
+		{"co-op", "no username co-op"},
+	}
+	for _, tt := range tests {
+		if ok := user.Delete(tt.name); !ok {
+			t.Fatalf("Delete(%s) failed", tt.name)
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+func TestUsersDefault_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name string
+		want string
+	}{
+		{"", "default username "},
+		{"tester", "default username tester"},
+		{"scooby", "default username scooby"},
+		{"co-op", "default username co-op"},
+	}
+	for _, tt := range tests {
+		if ok := user.Default(tt.name); !ok {
+			t.Fatalf("Default(%s) failed", tt.name)
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+func TestUsersSetPrivilege_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name  string
+		value int
+		want  string
+		rc    bool
+	}{
+		{"lowend", -1, "", false},
+		{"root", 0, "username root privilege 0", true},
+		{"crazy", 5, "username crazy privilege 5", true},
+		{"co-op", 10, "username co-op privilege 10", true},
+		{"netadmin", 15, "username netadmin privilege 15", true},
+		{"highend", 16, "", false},
+	}
+	for _, tt := range tests {
+		if ok, _ := user.SetPrivilege(tt.name, tt.value); ok != tt.rc {
+			t.Fatalf("SetPrivilege() rc expected %t got %t", tt.rc, ok)
+		}
+		if tt.rc {
+			cmds := dummyConnection.GetCommands()
+			if cmds[len(cmds)-1] != tt.want {
+				t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+			}
+		}
+	}
+}
+func TestUsersSetRole_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name  string
+		value string
+		want  string
+	}{
+		{"", "", "default username  role"},
+		{"scooby", "", "default username scooby role"},
+		{"scooby", "admin", "username scooby role admin"},
+		{"scooby", "net-admin", "username scooby role net-admin"},
+	}
+	for _, tt := range tests {
+		if ok := user.SetRole(tt.name, tt.value); !ok {
+			t.Fatalf("SetRole failed")
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+
 var testSSHKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKL1UtBALa4CvFUsHUipNym" +
 	"A04qCXuAtTwNcMj84bTUzUI+q7mdzRCTLkllXeVxKuBnaTm2PW7W67K5CVpl0" +
 	"EVCm6IY7FS7kc4nlnD/tFvTvShy/fzYQRAdM7ZfVtegW8sMSFJzBR/T/Y/sxI" +
@@ -229,6 +445,34 @@ var testSSHKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKL1UtBALa4CvFUsHUipNym"
 	"SAbgLIJLd52Xv+FyYi0c2L49ByBjcRrupp4zfXn4DNRnEG4K6GcmswHuMEGZv" +
 	"5vjJ9OYaaaaaaa"
 
+func TestUsersSetSshkey_UnitTest(t *testing.T) {
+	user := User(dummyNode)
+	tests := []struct {
+		name  string
+		value string
+		want  string
+	}{
+		{"tester", "", "no username tester sshkey"},
+		{"admin", testSSHKey, "username admin sshkey " + testSSHKey},
+		{"co-op", "", "no username co-op sshkey"},
+		{"scooby", testSSHKey, "username scooby sshkey " + testSSHKey},
+	}
+	for _, tt := range tests {
+		if ok := user.SetSshkey(tt.name, tt.value); !ok {
+			t.Fatalf("SetSshkey failed")
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestUserGet_SystemTest(t *testing.T) {
 	for _, dut := range duts {
 		cmds := []string{

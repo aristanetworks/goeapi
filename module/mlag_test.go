@@ -37,6 +37,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestMlagParseDomainID_UnitTest(t *testing.T) {
 	var m MlagEntity
 
@@ -240,6 +245,280 @@ no mpls routing`
 	}
 }
 
+func TestMlagSetDomainID_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default domain-id",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no domain-id"},
+		{"test", "domain-id test"},
+		{"test4", "domain-id test4"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetDomainID(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetDomainIDDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"mlag configuration",
+		"default domain-id",
+	}
+	mlag.SetDomainIDDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestMlagSetLocalInterface_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default local-interface",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no local-interface"},
+		{"Ethernet1", "local-interface Ethernet1"},
+		{"Port-Channel1", "local-interface Port-Channel1"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetLocalInterface(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetLocalInterfaceDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"mlag configuration",
+		"default local-interface",
+	}
+	mlag.SetLocalInterfaceDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestMlagSetPeerAddress_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default peer-address",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no peer-address"},
+		{"1.1.1.1", "peer-address 1.1.1.1"},
+		{"2.2.2.2", "peer-address 2.2.2.2"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetPeerAddress(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetPeerAddressDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"mlag configuration",
+		"default peer-address",
+	}
+	mlag.SetPeerAddressDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestMlagSetPeerLink_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default peer-link",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no peer-link"},
+		{"Ethernet1", "peer-link Ethernet1"},
+		{"Port-Channel1", "peer-link Port-Channel1"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetPeerLink(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetPeerLinkDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"mlag configuration",
+		"default peer-link",
+	}
+	mlag.SetPeerLinkDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestMlagSetShutdown_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default shutdown",
+	}
+	tests := []struct {
+		in   bool
+		want string
+	}{
+		{false, "no shutdown"},
+		{true, "shutdown"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetShutdown(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetShutdownDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"mlag configuration",
+		"default shutdown",
+	}
+	mlag.SetShutdownDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestMlagID_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+	cmds := []string{
+		"mlag configuration",
+		"default domain-id",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no domain-id"},
+		{"test", "domain-id test"},
+		{"test4", "domain-id test4"},
+	}
+
+	for _, tt := range tests {
+		mlag.SetDomainID(tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestMlagSetMlagIDDefault_UnitTest(t *testing.T) {
+	mlag := Mlag(dummyNode)
+
+	cmds := []string{
+		"interface Port-Channel1",
+		"default mlag",
+	}
+	mlag.SetMlagIDDefault("Port-Channel1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestMlagGet_SystemTest(t *testing.T) {
 	for _, dut := range duts {
 		cmds := []string{
@@ -291,7 +570,6 @@ func TestMlagGetter_SystemTest(t *testing.T) {
 
 		mlag := Mlag(dut)
 		config := mlag.Get()
-		//if config.isEqual(configTemp) == false {
 		if configTemp.DomainID() != config.DomainID() ||
 			configTemp.LocalInterface() != config.LocalInterface() ||
 			configTemp.PeerAddress() != config.PeerAddress() ||

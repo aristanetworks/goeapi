@@ -36,6 +36,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestAclMaskToPrefixlen_UnitTest(t *testing.T) {
 	tests := []struct {
 		in, want string
@@ -145,6 +150,157 @@ func TestAclParseEntries_UnitTest(t *testing.T) {
 	}
 }
 
+func TestAclGet_UnitTest(t *testing.T) {
+	initFixture()
+	acl := Acl(dummyNode)
+	ret, err := acl.Get("test")
+	if err != nil {
+		t.Fatalf("Expecting non-nil value from acl.Get(). Error: %s", err)
+	}
+	entry := ret.Entries()["20"]
+	if ret.Name() != "test" || ret.Type() != "standard" ||
+		entry.Action() != "permit" || entry.SrcAddr() != "1.2.3.4" ||
+		entry.SrcLen() != "16" || entry.Log() != "log" {
+		t.Fatalf("Invalid values returned. Ret: %#v Entry: %#v", ret, entry)
+	}
+}
+
+func TestAclGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	acl := Acl(dummyNode)
+	ret := acl.GetAll()
+	if _, found := ret["test"]; !found {
+		t.Fatalf("Expecting value from acl.GetAll().")
+	}
+}
+
+func TestAclGetSection_UnitTest(t *testing.T) {
+	initFixture()
+	acl := Acl(dummyNode)
+	if section := acl.GetSection("test"); section == "" {
+		t.Fatalf("Expected data got \"\"")
+	}
+}
+
+func TestAclGetSectionNil_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+	if section := acl.GetSection("Doesnotexist"); section != "" {
+		t.Fatalf("Expected \"\" got \"%q\"", section)
+	}
+}
+
+func TestAclCreate_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+
+	acl.Create("test")
+	cmds := dummyConnection.GetCommands()
+	if cmds[len(cmds)-1] != "ip access-list standard test" {
+		t.Errorf("Expected \"ip access-list standard test\"got \"%s\"",
+			cmds[len(cmds)-1])
+	}
+}
+func TestAclDelete_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+
+	acl.Delete("test")
+	cmds := dummyConnection.GetCommands()
+	if cmds[len(cmds)-1] != "no ip access-list standard test" {
+		t.Errorf("Expected \"no ip access-list standard test\"got \"%s\"",
+			cmds[len(cmds)-1])
+	}
+}
+
+func TestAclDefault_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+
+	acl.Default("test")
+	cmds := dummyConnection.GetCommands()
+	if cmds[len(cmds)-1] != "default ip access-list standard test" {
+		t.Errorf("Expected \"default ip access-list standard test\"got \"%s\"",
+			cmds[len(cmds)-1])
+	}
+}
+
+func TestAclUpdateEntry_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+	cmds := []string{
+		"ip access-list standard test",
+		"no 10",
+		"10 permit 0.0.0.0/32 log",
+		"exit",
+	}
+	tests := []struct {
+		log  bool
+		want string
+	}{
+		{true, "10 permit 0.0.0.0/32 log"},
+		{false, "10 permit 0.0.0.0/32"},
+	}
+
+	for _, tt := range tests {
+		acl.UpdateEntry("test", "10", "permit", "0.0.0.0", "32", tt.log)
+		cmds[2] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestAclAddEntry_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+	cmds := []string{
+		"ip access-list standard test",
+		"permit 0.0.0.0/32 log",
+		"exit",
+	}
+	tests := []struct {
+		log  bool
+		want string
+	}{
+		{true, "permit 0.0.0.0/32 log"},
+		{false, "permit 0.0.0.0/32"},
+	}
+
+	for _, tt := range tests {
+		acl.AddEntry("test", "permit", "0.0.0.0", "32", tt.log)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestAclRemoveEntry_UnitTest(t *testing.T) {
+	acl := Acl(dummyNode)
+
+	cmds := []string{
+		"ip access-list standard test",
+		"no 10",
+		"exit",
+	}
+	acl.RemoveEntry("test", 10)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestAclGet_SystemTest(t *testing.T) {
 	cmds := []string{
 		"no ip access-list standard test",
@@ -428,7 +584,7 @@ func TestAclRemoveEntry_SystemTest(t *testing.T) {
 		if found, _ := regexp.MatchString("10 permit any log", section); !found {
 			t.Fatalf("Acl section is missing [10 permit any log].")
 		}
-		if ok := acl.RemoveEntry("test", "10"); !ok {
+		if ok := acl.RemoveEntry("test", 10); !ok {
 			t.Fatalf("acl.RemoveEntry failure.")
 		}
 		section = acl.GetSection("test")

@@ -36,6 +36,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestIpInterfaceFunctions_UnitTest(t *testing.T) {
 	tests := []struct {
 		in   int
@@ -57,6 +62,7 @@ func TestIpInterfaceFunctions_UnitTest(t *testing.T) {
 		}
 	}
 }
+
 func TestIpInterfaceParseAddress_UnitTest(t *testing.T) {
 	var i IPInterfaceEntity
 
@@ -119,15 +125,132 @@ func TestIpInterfaceParseMtu_UnitTest(t *testing.T) {
 	}
 }
 
-func (src IPInterfaceConfig) isEqual(dst IPInterfaceConfig) bool {
-	for k, v := range src {
-		if dst[k] != v {
-			return false
+func TestIpInterfaceCreate_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet1",
+		"no switchport",
+	}
+	ip.Create("Ethernet1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
 		}
 	}
-	return true
 }
 
+func TestIpInterfaceDelete_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet1",
+		"no ip address",
+		"switchport",
+	}
+	ip.Delete("Ethernet1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestIpInterfaceSetAddress_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+	cmds := []string{
+		"interface Ethernet1",
+		"ip address 1.2.3.4/5",
+	}
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "no ip address"},
+		{"1.1.1.1/24", "ip address 1.1.1.1/24"},
+		{"1.2.3.4/5", "ip address 1.2.3.4/5"},
+	}
+
+	for _, tt := range tests {
+		ip.SetAddress("Ethernet1", tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestIpInterfaceSetAddressDefault_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet1",
+		"default ip address",
+	}
+	ip.SetAddressDefault("Ethernet1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestIpInterfaceSetMtu_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet1",
+		"mtu 1800",
+	}
+	ip.SetMtu("Ethernet1", 1800)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestIpInterfaceSetMtuInvalid_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+	if ok := ip.SetMtu("Ethernet1", 1); ok {
+		t.Fatalf("Shouldn't allow setting invalid MTU")
+	}
+}
+
+func TestIpInterfaceSetMtuDefault_UnitTest(t *testing.T) {
+	ip := IPInterface(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet1",
+		"default mtu",
+	}
+	ip.SetMtuDefault("Ethernet1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestIpInterfaceGet_SystemTest(t *testing.T) {
 	for _, dut := range duts {
 		ipIntf := IPInterface(dut)

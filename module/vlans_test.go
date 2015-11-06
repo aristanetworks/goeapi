@@ -40,6 +40,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func compareSlice(slice1 []string, slice2 []string) bool {
 	if len(slice1) != len(slice2) {
 		return false
@@ -206,6 +211,249 @@ func TestVlanParseTrunkGroup_UnitTest(t *testing.T) {
 	}
 }
 
+func TestVlanCreate_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"vlan " + vid,
+	}
+	vlan.Create(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanCreateInvalid_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(4095, 65535))
+	if ok := vlan.Create(vid); ok {
+		t.Fatalf("Invalid vid(%s) used. Should fail", vid)
+	}
+}
+
+func TestVlanDelete_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"no vlan " + vid,
+	}
+	vlan.Delete(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanDeleteInvalid_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(4095, 65535))
+	if ok := vlan.Delete(vid); ok {
+		t.Fatalf("Invalid vid(%s) used. Should fail", vid)
+	}
+}
+
+func TestVlanDefault_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"default vlan " + vid,
+	}
+	vlan.Default(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanDefaultInvalid_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(4095, 65535))
+	if ok := vlan.Default(vid); ok {
+		t.Fatalf("Invalid vid(%s) used. Should fail", vid)
+	}
+}
+
+func TestVlanConfigureVlan_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+	tg := RandomString(1, 32)
+
+	cmds := []string{
+		"name Test",
+		"state active",
+		"trunk group " + tg,
+		"no shutdown",
+	}
+	vlan.ConfigureVlan(vid, cmds...)
+	cmds = append([]string{"vlan " + vid}, cmds...)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanSetName_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+	name := RandomString(1, 32)
+
+	cmds := []string{
+		"vlan " + vid,
+		"name " + name,
+	}
+	vlan.SetName(vid, name)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanSetNameDefault_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"vlan " + vid,
+		"default name",
+	}
+	vlan.SetNameDefault(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanSetState_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"vlan " + vid,
+		"default state ",
+	}
+	tests := []struct {
+		state string
+		want  string
+	}{
+		{"", "no state"},
+		{"active", "state active"},
+		{"suspend", "state suspend"},
+	}
+
+	for _, tt := range tests {
+		vlan.SetState(vid, tt.state)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestVlanSetStateDefault_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"vlan " + vid,
+		"default state",
+	}
+	vlan.SetStateDefault(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanSetTrunkGroupDefault_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+
+	cmds := []string{
+		"vlan " + vid,
+		"default trunk group",
+	}
+	vlan.SetTrunkGroupDefault(vid)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanAddTrunkGroup_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+	tg := RandomString(1, 32)
+
+	cmds := []string{
+		"vlan " + vid,
+		"trunk group " + tg,
+	}
+	vlan.AddTrunkGroup(vid, tg)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanRemoveTrunkGroup_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	vid := strconv.Itoa(RandomInt(2, 4094))
+	tg := RandomString(1, 32)
+
+	cmds := []string{
+		"vlan " + vid,
+		"no trunk group " + tg,
+	}
+	vlan.RemoveTrunkGroup(vid, tg)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestVlanGet_SystemTest(t *testing.T) {
 	vlanTmp := VlanConfig{
 		"vlan_id":      "1",

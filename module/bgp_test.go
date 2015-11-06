@@ -39,6 +39,11 @@ import (
 	"testing"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestBgpParseAS_UnitTest(t *testing.T) {
 	var b BGPEntity
 
@@ -253,6 +258,319 @@ router bgp 6400
 	}
 }
 
+func TestBgpGet_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+	config := bgp.Get()
+	if config.BgpAs() != "65000" || config.RouterID() != "1.1.1.1" ||
+		config.Shutdown() != "true" || config.MaximumPaths() != "" ||
+		config.MaximumEcmpPaths() != "" || config.Networks() == nil {
+		t.Fatalf("Invalid result from Get(): %#v", config)
+	}
+}
+
+func TestBgpGetSection_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+	section := bgp.GetSection()
+	if section == "" {
+		t.Fatalf("No section returned")
+	}
+}
+
+func TestBgpCreate_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+	}
+	tests := []struct {
+		val  int
+		want string
+		rc   bool
+	}{
+		{65000, "router bgp 65000", true},
+		{65005, "router bgp 65005", false},
+		{66000, "", false},
+	}
+
+	for _, tt := range tests {
+		if got := bgp.Create(tt.val); got != tt.rc {
+			t.Fatalf("Expected \"%t\" got \"%t\"", tt.rc, got)
+		}
+		if tt.rc {
+			cmds[0] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestBgpDelete_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"no router bgp 65000",
+	}
+	bgp.Delete()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpDefault_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"default router bgp 65000",
+	}
+	bgp.Default()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpSetRouterID_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"default router-id",
+	}
+	tests := []struct {
+		val  string
+		want string
+	}{
+		{"", "no router-id"},
+		{"1.1.1.1", "router-id 1.1.1.1"},
+	}
+
+	for _, tt := range tests {
+		bgp.SetRouterID(tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpSetRouterIDDefault_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+	cmds := []string{
+		"router bgp 65000",
+		"default router-id",
+	}
+	bgp.SetRouterIDDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpSetMaximumPaths_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"maximum-paths 20",
+	}
+	bgp.SetMaximumPaths(20)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpSetMaximumPathsWithEcmp_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"maximum-paths 20 ecmp 20",
+	}
+
+	bgp.SetMaximumPathsWithEcmp(20, 20)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpSetMaximumPathsDefault_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"default maximum-paths",
+	}
+	bgp.SetMaximumPathsDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpSetShutdown_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"default shutdown",
+	}
+	tests := []struct {
+		enable bool
+		want   string
+	}{
+		{false, "no shutdown"},
+		{true, "shutdown"},
+	}
+
+	for _, tt := range tests {
+		bgp.SetShutdown(tt.enable)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpSetShutdownDefault_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"default shutdown",
+	}
+	bgp.SetShutdownDefault()
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpAddNetworkWithRouteMap_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"network 172.16.10.1/24 route-map test",
+	}
+	bgp.AddNetworkWithRouteMap("172.16.10.1", "24", "test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpAddNetwork_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"network 172.16.10.1/24",
+	}
+	bgp.AddNetwork("172.16.10.1", "24")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpRemoveNetworkWithRouteMap_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"no network 172.16.10.1/24 route-map test",
+	}
+	bgp.RemoveNetworkWithRouteMap("172.16.10.1", "24", "test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpRemoveNetwork_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+
+	cmds := []string{
+		"router bgp 65000",
+		"no network 172.16.10.1/24",
+	}
+	bgp.RemoveNetwork("172.16.10.1", "24")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func TestBgpGet_SystemTest(t *testing.T) {
 	for _, dut := range duts {
 		cmds := []string{

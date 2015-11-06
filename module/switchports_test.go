@@ -34,10 +34,22 @@ package module
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 )
 
+var interfaceList = []string{
+	"Ethernet1",
+	"Ethernet1/1",
+	"Port-Channel1",
+}
+
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestSwitchPortParseMode_UnitTest(t *testing.T) {
 	var s SwitchPortEntity
 
@@ -244,6 +256,304 @@ interface Port-Channel10
 	}
 }
 
+func TestSwitchPortCreate_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"no ip address",
+			"switchport",
+		}
+		sp.Create(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortDelete_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"no switchport",
+		}
+		sp.Delete(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"no ip address",
+			"default switchport",
+		}
+		sp.Default(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetMode_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	tests := []struct {
+		mode string
+		want string
+	}{
+		{"access", "switchport mode access"},
+		{"trunk", "switchport mode trunk"},
+	}
+
+	for _, intf := range interfaceList {
+
+		for _, tt := range tests {
+			cmds := []string{
+				"interface " + intf,
+				"switchport mode " + tt.mode,
+			}
+			sp.SetMode(intf, tt.mode)
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetModeDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default switchport mode",
+		}
+		sp.SetModeDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetAccessVlan_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	for _, intf := range interfaceList {
+		vid := strconv.Itoa(RandomInt(2, 4094))
+
+		cmds := []string{
+			"interface " + intf,
+			"switchport access vlan " + vid,
+		}
+		sp.SetAccessVlan(intf, vid)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetAccessVlanDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default switchport access vlan",
+		}
+		sp.SetAccessVlanDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkNativeVlan_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	for _, intf := range interfaceList {
+		vid := strconv.Itoa(RandomInt(2, 4094))
+
+		cmds := []string{
+			"interface " + intf,
+			"switchport trunk native vlan " + vid,
+		}
+		sp.SetTrunkNativeVlan(intf, vid)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkNativeVlanDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default switchport trunk native vlan",
+		}
+		sp.SetTrunkNativeVlanDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkAllowedVlans_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	for _, intf := range interfaceList {
+		vid := "1,2,3-5,6,7"
+
+		cmds := []string{
+			"interface " + intf,
+			"switchport trunk allowed vlan " + vid,
+		}
+		sp.SetTrunkAllowedVlans(intf, vid)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkAllowedVlansDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default switchport trunk allowed vlan",
+		}
+		sp.SetTrunkAllowedVlansDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkGroupDefault_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default switchport trunk group",
+		}
+		sp.SetTrunkGroupsDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortAddTrunkGroup_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	tg := RandomString(1, 32)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"switchport trunk group " + tg,
+		}
+		sp.AddTrunkGroup(intf, tg)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSwitchPortRemoveTrunkGroup_UnitTest(t *testing.T) {
+	sp := SwitchPort(dummyNode)
+	tg := RandomString(1, 32)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"no switchport trunk group " + tg,
+		}
+		sp.RemoveTrunkGroup(intf, tg)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func getEthInterfaces(s *SwitchPortEntity) []string {
 	var re = regexp.MustCompile(`(?m)^interface\s(Eth.+)`)
 	config := s.Config()

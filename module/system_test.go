@@ -35,11 +35,26 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
-
-	"github.com/aristanetworks/goeapi"
 )
 
-func TestSystemParseHostName_UnitTest(t *testing.T) {
+var initFile bool
+
+/*
+func initFixture() {
+	if initFile {
+		return
+	}
+	initFile = true
+	dummyNode.SetRunningConfig(LoadFixtureFile("running_config.text"))
+	return
+}*/
+
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
+func TestSystemHostNameParser_UnitTest(t *testing.T) {
 
 	shortConfig := `
 default mrp leave-all-timer
@@ -76,34 +91,7 @@ ip domain-name stormcontrol.net
 	}
 }
 
-func TestSystemParseHostName_SystemTest(t *testing.T) {
-	node, _ := goeapi.ConnectTo("dut")
-	node.SetAutoRefresh(true)
-	sys := System(node)
-
-	currName := sys.parseHostname()
-	newName := RandomString(3, 16)
-
-	if ok := sys.SetHostname(newName); !ok {
-		t.Error("Test1: Sethostname failed")
-	}
-	node.RunningConfig()
-	hname := sys.parseHostname()
-	if hname != newName {
-		t.Fatalf("Test2: Sethostname failed %s != %s", newName, hname)
-	}
-
-	if ok := sys.SetHostname(currName); !ok {
-		t.Error("Test3: Sethostname failed reapplying original hostname")
-	}
-	node.RunningConfig()
-	hname = sys.parseHostname()
-	if hname == newName {
-		t.Fatalf("Test4: parseHostname failed %s != %s", currName, hname)
-	}
-}
-
-func TestSystemParseIpRouting_UnitTest(t *testing.T) {
+func TestSystemIpRoutingParser_UnitTest(t *testing.T) {
 
 	shortConfig := `
 ip route 0.0.0.0/0 192.68.1.254 1 tag 0
@@ -136,6 +124,156 @@ ip mfib packet-buffers unresolved max 3
 	}
 	if got := parseIPRouting(""); got != false {
 		t.Fatalf("parseIPRouting(\"\") = %v; want false.", got)
+	}
+}
+
+func TestSystemGetKeysReturned_UnitTest(t *testing.T) {
+	sys := System(dummyNode)
+	sysConfig := sys.Get()
+	for _, val := range []string{"hostname", "iprouting"} {
+		if _, found := sysConfig[val]; !found {
+			t.Fatalf("Get() missing key %s", val)
+		}
+	}
+}
+
+func TestSystemCheckSystemConfigGetters_UnitTest(t *testing.T) {
+	initFixture()
+	sys := System(dummyNode)
+	sysConfig := sys.Get()
+
+	if sysConfig.HostName() != "veos01" ||
+		sysConfig.IPRouting() != "true" {
+		t.Fatalf("Mismatch in values. Got: %#v", sysConfig)
+	}
+}
+
+func TestSystemSetHostname_UnitTest(t *testing.T) {
+	sys := System(dummyNode)
+	newName1 := RandomString(3, 16)
+	newName2 := RandomString(3, 16)
+	newName3 := RandomString(3, 16)
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{newName1, "hostname " + newName1},
+		{newName2, "hostname " + newName2},
+		{newName3, "hostname " + newName3},
+		{"", "no hostname"},
+	}
+	for _, tt := range tests {
+		if ok := sys.SetHostname(tt.in); !ok {
+			t.Fatalf("SetHostname")
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+
+func TestSystemSetHostnameDefault_UnitTest(t *testing.T) {
+	sys := System(dummyNode)
+	if ok := sys.SetHostnameDefault(); !ok {
+		t.Fatalf("SetHostnameDefault")
+	}
+	cmds := dummyConnection.GetCommands()
+	if cmds[len(cmds)-1] != "default hostname" {
+		t.Errorf("Expected \"default hostname\" got \"%s\"", cmds[len(cmds)-1])
+	}
+}
+
+func TestSystemSetIPRouting_UnitTest(t *testing.T) {
+	sys := System(dummyNode)
+	tests := []struct {
+		in1  string
+		in2  bool
+		want string
+	}{
+		{"", true, "ip routing"},
+		{"", false, "no ip routing"},
+		{"vrf TEST", true, "ip routing vrf TEST"},
+		{"vrf TEST", false, "no ip routing vrf TEST"},
+	}
+	for _, tt := range tests {
+		if ok := sys.SetIPRouting(tt.in1, tt.in2); !ok {
+			t.Fatalf("SetIPRouting")
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+
+func TestSystemSetIPRoutingDefault_UnitTest(t *testing.T) {
+	sys := System(dummyNode)
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"", "default ip routing"},
+		{"vrf TEST", "default ip routing vrf TEST"},
+	}
+	for _, tt := range tests {
+		if ok := sys.SetIPRoutingDefault(tt.in); !ok {
+			t.Fatalf("SetIPRoutingDefault")
+		}
+		cmds := dummyConnection.GetCommands()
+		if cmds[len(cmds)-1] != tt.want {
+			t.Errorf("Expected \"%s\" got \"%s\"", tt.want, cmds[len(cmds)-1])
+		}
+	}
+}
+
+func TestSystemParseHostname_UnitTest(t *testing.T) {
+	initFixture()
+	sys := System(dummyNode)
+	hostname := sys.parseHostname()
+	if hostname != "veos01" {
+		t.Fatalf("ParseHostname failed. expected \"localhost\" got %s", hostname)
+	}
+}
+
+func TestSystemIPRouting_UnitTest(t *testing.T) {
+	initFixture()
+	sys := System(dummyNode)
+	if ok := sys.parseIPRouting(); !ok {
+		t.Fatalf("ParseIPRouting expected \"true\"")
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
+func TestSystemParseHostName_SystemTest(t *testing.T) {
+	for _, dut := range duts {
+		dut.SetAutoRefresh(true)
+		sys := System(dut)
+
+		currName := sys.parseHostname()
+		newName := RandomString(3, 16)
+
+		if ok := sys.SetHostname(newName); !ok {
+			t.Error("Test1: Sethostname failed")
+		}
+		dut.RunningConfig()
+		hname := sys.parseHostname()
+		if hname != newName {
+			t.Fatalf("Test2: Sethostname failed %s != %s", newName, hname)
+		}
+
+		if ok := sys.SetHostname(currName); !ok {
+			t.Error("Test3: Sethostname failed reapplying original hostname")
+		}
+		dut.RunningConfig()
+		hname = sys.parseHostname()
+		if hname == newName {
+			t.Fatalf("Test4: parseHostname failed %s != %s", currName, hname)
+		}
 	}
 }
 
@@ -271,7 +409,7 @@ func TestSystemSetIpRoutingTrue_SystemTest(t *testing.T) {
 		}
 
 		system := System(dut)
-		if ok := system.SetIPRouting("", false, true); !ok {
+		if ok := system.SetIPRouting("", true); !ok {
 			t.Fatalf("SetIPRouting failed.")
 		}
 
@@ -291,7 +429,7 @@ func TestSystemSetIpRoutingFalse_SystemTest(t *testing.T) {
 		}
 
 		system := System(dut)
-		if ok := system.SetIPRouting("", false, false); !ok {
+		if ok := system.SetIPRouting("", false); !ok {
 			t.Fatalf("SetIPRouting failed.")
 		}
 		if system.parseIPRouting() != false {
@@ -310,8 +448,8 @@ func TestSystemSetIpRoutingDefault_SystemTest(t *testing.T) {
 		}
 
 		system := System(dut)
-		if ok := system.SetIPRouting("", true, false); !ok {
-			t.Fatalf("SetIPRouting failed.")
+		if ok := system.SetIPRoutingDefault(""); !ok {
+			t.Fatalf("SetIPRoutingDefault failed.")
 		}
 		if system.parseIPRouting() != false {
 			t.Fatalf("expecting no ip routing to be configured.")

@@ -45,7 +45,6 @@ var fixturesPath = ""
 func init() {
 	_, filename, _, _ := runtime.Caller(1)
 	fixturesPath = path.Join(path.Dir(filename), "../testdata/fixtures")
-
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
@@ -102,8 +101,10 @@ func GetFixture(filename string) string {
 
 // LoadFixtureFile reads the fixtures file into a string.
 func LoadFixtureFile(file string) string {
-	if data, err := ioutil.ReadFile(GetFixture(file)); err == nil {
-		return string(data)
+	data, err := ioutil.ReadFile(GetFixture(file))
+	if err != nil {
+		panic(err)
+		return ""
 	}
-	return ""
+	return string(data)
 }

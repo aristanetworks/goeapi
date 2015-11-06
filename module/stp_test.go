@@ -39,6 +39,11 @@ import (
 	"github.com/aristanetworks/goeapi"
 )
 
+/**
+ *****************************************************************************
+ * Unit Tests
+ *****************************************************************************
+ **/
 func TestSTPInterfaces_UnitTest(t *testing.T) {
 	stp := Stp(&goeapi.Node{})
 	i := stp.Interfaces()
@@ -52,6 +57,41 @@ func TestSTPInstances_UnitTest(t *testing.T) {
 	i := stp.Instances()
 	if i == nil {
 		t.Fatalf("No STPInstances Created")
+	}
+}
+
+func TestSTPSetMode_UnitTest(t *testing.T) {
+	stp := Stp(dummyNode)
+
+	cmds := []string{
+		"default spanning-tree mode",
+	}
+
+	tests := [...]struct {
+		mode string
+		want string
+		rc   bool
+	}{
+		{"mstp", "spanning-tree mode mstp", true},
+		{"Invalid", "", false},
+		{"none", "spanning-tree mode none", true},
+		{"", "no spanning-tree mode", true},
+	}
+
+	for _, tt := range tests {
+		if got := stp.SetMode(tt.mode); got != tt.rc {
+			t.Fatalf("SetMode(%s) = %t; want %t", tt.mode, got, tt.rc)
+		}
+		if tt.rc {
+			cmds[0] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
 	}
 }
 
@@ -198,6 +238,174 @@ func TestSTPIntfParsePortFastType_UnitTest(t *testing.T) {
 
 }
 
+func TestSTPIntfGetKeysReturned_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+	config := stp.Get("Ethernet1")
+	for _, val := range []string{"bpduguard", "portfast", "portfast_type"} {
+		if _, found := config[val]; !found {
+			t.Fatalf("Get() missing key %s", val)
+		}
+	}
+}
+
+func TestSTPIntfSetPortfastType_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+	tests := []struct {
+		value string
+		want  string
+		rc    bool
+	}{
+		{"", "", false},
+		{"network", "spanning-tree portfast ", true},
+		{"edge", "spanning-tree portfast ", true},
+		{"normal", "spanning-tree portfast ", true},
+		{"InvalidType", "", false},
+	}
+
+	for _, intf := range interfaceList {
+
+		for _, tt := range tests {
+			cmds := []string{
+				"interface " + intf,
+				"spanning-tree portfast " + tt.value,
+			}
+			if tt.value == "edge" {
+				cmds = append(cmds, "spanning-tree portfast auto")
+			}
+			if ok := stp.SetPortfastType(intf, tt.value); ok != tt.rc {
+				t.Fatalf("Expected status \"%q\" got \"%q\"", tt.rc, ok)
+			}
+			if tt.rc {
+				// first two commands are 'enable', 'configure terminal'
+				commands := dummyConnection.GetCommands()[2:]
+				for idx, val := range commands {
+					if cmds[idx] != val {
+						t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+					}
+				}
+			}
+		}
+	}
+}
+
+func TestSTPIntfSetPortfast_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default spanning-tree portfast",
+		}
+
+		tests := []struct {
+			enable bool
+			want   string
+		}{
+			{true, "spanning-tree portfast"},
+			{false, "no spanning-tree portfast"},
+		}
+
+		for _, tt := range tests {
+			stp.SetPortfast(intf, tt.enable)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestSTPIntfSetPortfastInvalidIntf_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+	intf := RandomString(8, 15)
+
+	if ok := stp.SetPortfast(intf, true); ok {
+		t.Fatalf("Invalid interface should return false")
+	}
+}
+
+func TestSTPIntfSetPortfastDefault_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default spanning-tree portfast",
+		}
+		stp.SetPortfastDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestSTPIntfSetBPDUGuard_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default spanning-tree bpduguard",
+		}
+
+		tests := []struct {
+			enable bool
+			want   string
+		}{
+			{true, "spanning-tree bpduguard enable"},
+			{false, "spanning-tree bpduguard disable"},
+		}
+
+		for _, tt := range tests {
+			stp.SetBPDUGuard(intf, tt.enable)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestSTPIntfSetBPDUGuardDefault_UnitTest(t *testing.T) {
+	stp := STPInterfaces(dummyNode)
+
+	for _, intf := range interfaceList {
+
+		cmds := []string{
+			"interface " + intf,
+			"default spanning-tree bpduguard",
+		}
+		stp.SetBPDUGuardDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+/**
+ *****************************************************************************
+ * System Tests
+ *****************************************************************************
+ **/
 func getValidInterfaces(s *STPInterfaceEntity) []string {
 	var re = regexp.MustCompile(`(?m)^interface\s(Eth.+|Po.+)`)
 	config := s.Config()
