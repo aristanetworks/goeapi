@@ -104,7 +104,6 @@ func LoadFixtureFile(file string) string {
 	data, err := ioutil.ReadFile(GetFixture(file))
 	if err != nil {
 		panic(err)
-		return ""
 	}
 	return string(data)
 }

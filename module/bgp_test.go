@@ -291,7 +291,8 @@ func TestBgpCreate_UnitTest(t *testing.T) {
 		rc   bool
 	}{
 		{65000, "router bgp 65000", true},
-		{65005, "router bgp 65005", false},
+		{65534, "router bgp 65534", true},
+		{65535, "", false},
 		{66000, "", false},
 	}
 

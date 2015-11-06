@@ -273,7 +273,7 @@ func TestSTPIntfSetPortfastType_UnitTest(t *testing.T) {
 				cmds = append(cmds, "spanning-tree portfast auto")
 			}
 			if ok := stp.SetPortfastType(intf, tt.value); ok != tt.rc {
-				t.Fatalf("Expected status \"%q\" got \"%q\"", tt.rc, ok)
+				t.Fatalf("Expected status \"%t\" got \"%t\"", tt.rc, ok)
 			}
 			if tt.rc {
 				// first two commands are 'enable', 'configure terminal'
