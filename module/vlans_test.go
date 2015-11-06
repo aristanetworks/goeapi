@@ -211,6 +211,37 @@ func TestVlanParseTrunkGroup_UnitTest(t *testing.T) {
 	}
 }
 
+func TestVlanGet_UnitTest(t *testing.T) {
+	initFixture()
+	vlan := Vlan(dummyNode)
+
+	config := vlan.Get("10")
+	if config == nil || config.Name() != "VLAN0010" || config.State() != "active" ||
+		config.TrunkGroups() != "tg1" {
+		t.Fatalf("Get() returned invalid data. %#v", config)
+	}
+}
+
+func TestVlanGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	vlan := Vlan(dummyNode)
+
+	configs := vlan.GetAll()
+	if configs == nil || configs["10"] == nil {
+		t.Fatalf("GetAll() returned invalid data. %#v", configs)
+	}
+}
+
+func TestVlanGetSection_UnitTest(t *testing.T) {
+	initFixture()
+	vlan := Vlan(dummyNode)
+
+	section := vlan.GetSection("10")
+	if section == "" {
+		t.Fatalf("GetSection() returned nil")
+	}
+}
+
 func TestVlanCreate_UnitTest(t *testing.T) {
 	vlan := Vlan(dummyNode)
 	vid := strconv.Itoa(RandomInt(2, 4094))
@@ -411,6 +442,23 @@ func TestVlanSetTrunkGroupDefault_UnitTest(t *testing.T) {
 	}
 }
 
+func TestVlanSetTrunkGroup_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+
+	cmds := []string{
+		"vlan 10",
+		"trunk group tg2",
+	}
+	vlan.SetTrunkGroup("10", []string{"tg1", "tg2"})
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
 func TestVlanAddTrunkGroup_UnitTest(t *testing.T) {
 	vlan := Vlan(dummyNode)
 	vid := strconv.Itoa(RandomInt(2, 4094))
@@ -542,24 +590,6 @@ func TestVlanGetSectionInvalid_SystemTest(t *testing.T) {
 
 		if ok := vlan.GetSection(strconv.Itoa(vid)); ok != "" {
 			t.Fatalf("GetSection() for invalid vlan should return \"\"")
-		}
-	}
-}
-
-func TestVlanGetTrunkGroupsInvalid_SystemTest(t *testing.T) {
-	for _, dut := range duts {
-		vid := RandomInt(2, 4094)
-		cmds := []string{
-			"no vlan " + strconv.Itoa(vid),
-		}
-		if ok := dut.Config(cmds...); !ok {
-			t.Fatalf("dut.Config() failure")
-		}
-
-		vlan := Vlan(dut)
-
-		if ok := vlan.GetTrunkGroups(strconv.Itoa(vid)); ok != "" {
-			t.Fatalf("GetTrunkGroups(%d) for invalid vlan should return \"\"", vid)
 		}
 	}
 }
@@ -778,10 +808,6 @@ func TestVlanSetTrunkGroups_SystemTest(t *testing.T) {
 		if ok := vlan.SetTrunkGroup(strconv.Itoa(vid), confTgs); !ok {
 			t.Fatalf("Failure Setting Trunk Group to default")
 
-		}
-
-		if ret := vlan.GetTrunkGroups(strconv.Itoa(vid)); ret == "" {
-			t.Fatalf("GetTrunkGroups(%d) should return valid entries", vid)
 		}
 
 		show := Show(dut)

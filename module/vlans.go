@@ -51,6 +51,24 @@ var (
 // VlanConfig represents a parsed vlan entry containing
 type VlanConfig map[string]string
 
+// Name returns the Vlan name for this VlanConfig
+// Null string returned if not set
+func (v VlanConfig) Name() string {
+	return v["name"]
+}
+
+// State returns the Vlan state for this VlanConfig
+// Null string returned if not set
+func (v VlanConfig) State() string {
+	return v["state"]
+}
+
+// TrunkGroups returns the Vlan trunk groups configured for this VlanConfig
+// Null string returned if not set
+func (v VlanConfig) TrunkGroups() string {
+	return v["trunk_groups"]
+}
+
 // VlanConfigMap represents a parsed vlan entry containing
 type VlanConfigMap map[string]VlanConfig
 
@@ -137,23 +155,6 @@ func (v *VlanEntity) GetAll() VlanConfigMap {
 // Returns:
 //  Returns string representation of Vlan config entry
 func (v *VlanEntity) GetSection(vlan string) string {
-	parent := fmt.Sprintf(`vlan\s+(%s$)|(%s,.*)|(.*,%s,)|(.*,%s$)`,
-		vlan, vlan, vlan, vlan)
-	config, err := v.GetBlock(parent)
-	if err != nil {
-		return ""
-	}
-	return config
-}
-
-// GetTrunkGroups returns the trunk groups for a given Vlan Entry.
-//
-// Args:
-//  vlan (string): The vlan id
-//
-// Returns:
-//  Returns string representation of vlan trunk groups
-func (v *VlanEntity) GetTrunkGroups(vlan string) string {
 	parent := fmt.Sprintf(`vlan\s+(%s$)|(%s,.*)|(.*,%s,)|(.*,%s$)`,
 		vlan, vlan, vlan, vlan)
 	config, err := v.GetBlock(parent)
