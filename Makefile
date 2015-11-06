@@ -1,5 +1,5 @@
 GO := go
-GOTEST_FLAGS := -v
+GOTEST_FLAGS :=
 COV_FILE := coverage.out
 COV_FUNC_OUT := coverage_func.out
 GOPKG := github.com/aristanetworks/goeapi
