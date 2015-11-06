@@ -71,6 +71,16 @@ func (n *Node) GetConnection() EapiConnectionEntity {
 
 }
 
+// SetConnection sets the EapiConnectionEntity
+// associtated with this Node.
+func (n *Node) SetConnection(c EapiConnectionEntity) {
+	if n == nil {
+		return
+	}
+	n.conn = c
+
+}
+
 // SetAutoRefresh sets the current nodes auto refresh attribute to either
 // true or false.
 //
@@ -90,6 +100,10 @@ func (n *Node) SetAutoRefresh(val bool) {
 //                   authenticate to exec mode
 func (n *Node) EnableAuthentication(passwd string) {
 	n.enablePasswd = strings.TrimSpace(passwd)
+}
+
+func (n *Node) SetRunningConfig(config string) {
+	n.runningConfig = config
 }
 
 // RunningConfig returns the running configuration for the Arista EOS
@@ -199,9 +213,11 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 //  Error returned on failure.
 func (n *Node) GetSection(regex string, config string) (string, error) {
 	var params string
+	var fetchCached bool
 	if config == "" || config == "running-config" {
 		config = "running-config"
 		params = "all"
+		fetchCached = true
 	}
 	if config != "running-config" && config != "startup-config" {
 		return "", fmt.Errorf("Invalid config type: %s", config)
@@ -210,7 +226,11 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Invalid regexp.")
 	}
-	config, err = n.GetConfig(config, params)
+	if fetchCached {
+		config = n.RunningConfig()
+	} else {
+		config, err = n.GetConfig(config, params)
+	}
 	if err != nil || config == "" {
 		return "", err
 	}
@@ -252,7 +272,7 @@ func (n *Node) Config(commands ...string) bool {
 // Enable issues an array of commands to the node in enable mode
 //
 // This method will send the commands to the node and evaluate
-// the results.  If a command fails due to an encoding error,
+// the results.  (TODO) If a command fails due to an encoding error,
 // then the command set will be re-issued individual with text
 // encoding.
 //
