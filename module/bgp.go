@@ -99,17 +99,17 @@ func (b *BgpConfig) Networks() []BgpNetworkEntry {
 }
 
 // Prefix returns the prefix data for this BgpNetworkEntry
-func (b *BgpNetworkEntry) Prefix() string {
+func (b BgpNetworkEntry) Prefix() string {
 	return b["prefix"]
 }
 
 // MaskLen returns the masklen data for this BgpNetworkEntry
-func (b *BgpNetworkEntry) MaskLen() string {
+func (b BgpNetworkEntry) MaskLen() string {
 	return b["masklen"]
 }
 
 // RouteMap returns the routemap data for this BgpNetworkEntry
-func (b *BgpNetworkEntry) RouteMap() string {
+func (b BgpNetworkEntry) RouteMap() string {
 	return b["route_map"]
 }
 
