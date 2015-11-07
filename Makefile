@@ -4,7 +4,7 @@ GOTEST_FLAGS :=
 TEST_TIMEOUT := 120s
 
 # Code Coverage Related
-COV_FILE := coverage.out
+COV_FILE := coverage.txt
 COV_FUNC_OUT := coverage_func.out
 COVER_MODE := count
 
@@ -24,7 +24,7 @@ GOLINT := $(GOBIN)/golint
 all: install
 
 install:
-		$(GO) install $(PKGS)
+	$(GO) install $(PKGS)
 
 test: unittest vet
 
