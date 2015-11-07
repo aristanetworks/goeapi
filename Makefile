@@ -6,7 +6,6 @@ TEST_TIMEOUT := 120s
 # Code Coverage Related
 COV_FILE := coverage.out
 COV_FUNC_OUT := coverage_func.out
-COVER_PKGS := $(shell go list ./... | grep -v /examples)
 COVER_MODE := count
 
 # External Tools
@@ -14,6 +13,7 @@ EXTERNAL_TOOLS=\
 	golang.org/x/tools/cmd/cover \
 	golang.org/x/tools/cmd/vet
 
+PKGS := $(shell go list ./... | grep -v /examples)
 
 ifndef GOBIN
 	GOBIN = $(GOPATH)/bin
@@ -21,13 +21,18 @@ endif
 
 GOLINT := $(GOBIN)/golint
 
-test: testunit vet
+all: install
 
-testsys:
-	$(GO) test $(COVER_PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
+install:
+		$(GO) install $(PKGS)
 
-testunit:
-	$(GO) test $(COVER_PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
+test: unittest vet
+
+systest:
+	$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
+
+unittest:
+	$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
 updatedeps:
 	$(GO) get -u github.com/mitchellh/mapstructure
@@ -38,7 +43,7 @@ coverdata:
 		$(GO) get -u golang.org/x/tools/cmd/cover; \
 	fi
 	@echo 'mode: $(COVER_MODE)' > $(COV_FILE)
-	@for dir in $(COVER_PKGS); do \
+	@for dir in $(PKGS); do \
 		$(GO) test -covermode=$(COVER_MODE) -coverprofile=cov_tmp.out -run UnitTest$  $$dir || exit; \
 		tail -n +2 cov_tmp.out >> $(COV_FILE) && \
 		rm -f cov_tmp.out; \
@@ -49,7 +54,8 @@ coverage: coverdata
 	@rm -f $(COV_FILE)
 
 coveragefunc: coverdata
-	$(GO) tool cover -func=$(COV_FILE) > $(COV_FUNC_OUT)
+	$(GO) tool cover -func=$(COV_FILE)
+	#$(GO) tool cover -func=$(COV_FILE) > $(COV_FUNC_OUT)
 	@rm -f $(COV_FILE)
 
 # see 'go doc cmd/vet'
@@ -85,4 +91,4 @@ bootstrap:
 		go get $$tool; \
 	done
 
-.PHONY: test testunit testsys updatedeps coverdata coverage coveragefunc vet lint fmt doc clean bootstrap
+.PHONY: test unittest systest updatedeps coverdata coverage coveragefunc vet lint fmt doc clean bootstrap
