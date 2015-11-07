@@ -1,8 +1,19 @@
+#
 GO := go
 GOTEST_FLAGS :=
+TEST_TIMEOUT := 120s
+
+# Code Coverage Related
 COV_FILE := coverage.out
 COV_FUNC_OUT := coverage_func.out
-GOPKG := github.com/aristanetworks/goeapi
+COVER_PKGS := $(shell go list ./... | grep -v /examples)
+COVER_MODE := count
+
+# External Tools
+EXTERNAL_TOOLS=\
+	golang.org/x/tools/cmd/cover \
+	golang.org/x/tools/cmd/vet
+
 
 ifndef GOBIN
 	GOBIN = $(GOPATH)/bin
@@ -10,30 +21,36 @@ endif
 
 GOLINT := $(GOBIN)/golint
 
-test:
-	$(GO) test $(GOTEST_FLAGS) ./...
-	@$(MAKE) vet
+test: testunit vet
 
 testsys:
-	$(GO) test ./ ./module $(GOTEST_FLAGS) -run SystemTest$
+	$(GO) test $(COVER_PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
 
 testunit:
-	$(GO) test ./ ./module $(GOTEST_FLAGS) -run UnitTest$
+	$(GO) test $(COVER_PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
 updatedeps:
 	$(GO) get -u github.com/mitchellh/mapstructure
 	$(GO) get -u github.com/vaughan0/go-ini
 
-coverage:
+coverdata:
 	@$(GO) tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
 		$(GO) get -u golang.org/x/tools/cmd/cover; \
 	fi
-	$(GO) test $(GOPKG) -coverprofile=$(COV_FILE)
-	$(GO) test $(GOPKG)/module -coverprofile=coverage_api.out
-	@tail -n +2 coverage_api.out >> $(COV_FILE)
+	@echo 'mode: $(COVER_MODE)' > $(COV_FILE)
+	@for dir in $(COVER_PKGS); do \
+		$(GO) test -covermode=$(COVER_MODE) -coverprofile=cov_tmp.out -run UnitTest$  $$dir || exit; \
+		tail -n +2 cov_tmp.out >> $(COV_FILE) && \
+		rm -f cov_tmp.out; \
+	done;
+
+coverage: coverdata
 	$(GO) tool cover -html=$(COV_FILE)
+	@rm -f $(COV_FILE)
+
+coveragefunc: coverdata
 	$(GO) tool cover -func=$(COV_FILE) > $(COV_FUNC_OUT)
-	@rm coverage_api.out
+	@rm -f $(COV_FILE)
 
 # see 'go doc cmd/vet'
 # 'go tool vet .' recursively descends the directory,
@@ -62,4 +79,10 @@ doc:
 clean:
 	rm -f $(COV_FILE) $(COV_FUNC_OUT)
 
-.PHONY: test testunit testsys updatedeps coverage vet lint fmt doc clean
+bootstrap:
+	@for tool in  $(EXTERNAL_TOOLS) ; do \
+		echo "Installing $$tool" ; \
+		go get $$tool; \
+	done
+
+.PHONY: test testunit testsys updatedeps coverdata coverage coveragefunc vet lint fmt doc clean bootstrap
