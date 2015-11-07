@@ -40,6 +40,9 @@ import (
 	"github.com/aristanetworks/goeapi"
 )
 
+// BgpNetworkEntry represents a BGP network config entry
+type BgpNetworkEntry map[string]string
+
 // BgpConfig represents the parsed Bgp config for an interface
 type BgpConfig struct {
 	asNumber     string
@@ -47,7 +50,7 @@ type BgpConfig struct {
 	shutdown     string
 	maxPaths     string
 	maxEcmpPaths string
-	networks     []map[string]string
+	networks     []BgpNetworkEntry
 }
 
 // BgpAs returns the BGP config AS number
@@ -80,10 +83,34 @@ func (b *BgpConfig) MaximumEcmpPaths() string {
 	return b.maxEcmpPaths
 }
 
-// MaximumEcmpPaths returns the configured value for
-// BGP max ECMP paths. Empty string is returned if no value set.
-func (b *BgpConfig) Networks() []map[string]string {
+// Networks returns a list of configured network statements
+// Each entry represents a bgp network entry. Entry formed as
+// follows:
+// [
+// 	  	{
+//			"prefix":"",
+//			"masklen":"",
+//			"route_map":"",
+//		},
+//		{..
+// ]
+func (b *BgpConfig) Networks() []BgpNetworkEntry {
 	return b.networks
+}
+
+// Prefix returns the prefix data for this BgpNetworkEntry
+func (b *BgpNetworkEntry) Prefix() string {
+	return b["prefix"]
+}
+
+// MaskLen returns the masklen data for this BgpNetworkEntry
+func (b *BgpNetworkEntry) MaskLen() string {
+	return b["masklen"]
+}
+
+// RouteMap returns the routemap data for this BgpNetworkEntry
+func (b *BgpNetworkEntry) RouteMap() string {
+	return b["route_map"]
 }
 
 // BGPEntity provides a configuration resource for Bgp
@@ -179,7 +206,7 @@ func (b *BGPEntity) parseShutdown(config string) bool {
 // Returned is a []map[sring]string...which represents a list of network
 // configuration statements each with a mapped entry containing the 'prefix',
 // 'masklen', and 'route_map'.
-func (b *BGPEntity) parseNetworks(config string) []map[string]string {
+func (b *BGPEntity) parseNetworks(config string) []BgpNetworkEntry {
 	reNet := regexp.MustCompile(`(?m)network (.+)/(\d+)(?: route-map (\w+))*`)
 
 	matches := reNet.FindAllStringSubmatch(config, -1)
@@ -188,10 +215,10 @@ func (b *BGPEntity) parseNetworks(config string) []map[string]string {
 		return nil
 	}
 
-	resource := make([]map[string]string, len(matches))
+	resource := make([]BgpNetworkEntry, len(matches))
 
 	for idx, line := range matches {
-		resource[idx] = map[string]string{
+		resource[idx] = BgpNetworkEntry{
 			"prefix":    line[1],
 			"masklen":   line[2],
 			"route_map": line[3],
