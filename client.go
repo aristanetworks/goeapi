@@ -102,6 +102,8 @@ func (n *Node) EnableAuthentication(passwd string) {
 	n.enablePasswd = strings.TrimSpace(passwd)
 }
 
+// SetRunningConfig sets the running config to the config passed in.
+// This currently is used only in setting up tests.
 func (n *Node) SetRunningConfig(config string) {
 	n.runningConfig = config
 }
