@@ -47,22 +47,22 @@ $ make bootstrap
   ```
 
 # Getting Started
-The following steps need to be followed to assure successful configuration of goeapi. 
+The following steps need to be followed to assure successful configuration of goeapi.
 
 1. EOS Command API must be enabled
 
-    To enable EOS Command API from configuration mode, configure proper protocol under management api, and 
+    To enable EOS Command API from configuration mode, configure proper protocol under management api, and
     then verify:
     ```
         Switch# configure terminal
-        Switch(config)# management api http-commands 
+        Switch(config)# management api http-commands
         Switch(config-mgmt-api-http-cmds)# protocol ?
           http         Configure HTTP server options
           https        Configure HTTPS server options
           unix-socket  Configure Unix Domain Socket
         Switch(config-mgmt-api-http-cmds)# protocol http
         Switch(config-mgmt-api-http-cmds)# end
-        
+
         Switch# show management api http-commands
         Enabled:            Yes
         HTTPS server:       running, set to use port 443
@@ -74,8 +74,8 @@ The following steps need to be followed to assure successful configuration of go
 
 2. Create configuration file with proper node properties. (*See eapi.conf file examples below*)
 
-    **Note:** The default search path for the conf file is ``~/.eapi.conf`` 
-    followed by ``/mnt/flash/eapi.conf``.   This can be overridden by setting 
+    **Note:** The default search path for the conf file is ``~/.eapi.conf``
+    followed by ``/mnt/flash/eapi.conf``.   This can be overridden by setting
     ``EAPI_CONF=<path file conf file>`` in your environment.
 
 ## Example eapi.conf File
@@ -91,7 +91,7 @@ The following configuration options are available for defining node entries:
 * **enablepwd** - The enable mode password if required by the destination node
 * **transport** - Configures the type of transport connection to use.  The default value is _https_.  Valid values are:
   * http
-  * https  
+  * https
 * **port** - Configures the port to use for the eAPI connection. (Currently Not Implemented)
 
 _Note:_ See the EOS User Manual found at arista.com for more details on configuring eAPI values.
@@ -145,13 +145,13 @@ func main() {
 }
 ```
 goeapi provides a way for users to directly couple a command with a predefined response. The underlying api will issue the command and the response stored in the defined type. For example, lets say the configured vlan ports are needed for some form of processing. If we know the JSON response for the command composed like the following:
-(from Arista Command API Explorer): 
+(from Arista Command API Explorer):
 ```json
  {
     "jsonrpc": "2.0",
     "result": [
-       {   
-          "sourceDetail": "", 
+       {
+          "sourceDetail": "",
           "vlans": {
              "2": {
                 "status": "active",
@@ -159,22 +159,22 @@ goeapi provides a way for users to directly couple a command with a predefined r
                 "interfaces": {
                    "Port-Channel10": {
                       "privatePromoted": false
-                   },  
+                   },
                    "Ethernet2": {
                       "privatePromoted": false
-                   },  
+                   },
                    "Ethernet1": {
                       "privatePromoted": false
-                   },  
+                   },
                    "Port-Channel5": {
                       "privatePromoted": false
-                   }   
-                },  
+                   }
+                },
                 "dynamic": false
-             },  
-          }   
-       }   
-    ],  
+             },
+          }
+       }
+    ],
     "id": "CapiExplorer-123"
  }
 ```
@@ -289,15 +289,15 @@ The goeapi library provides various tests. To run System specific tests, you wil
 update the ``dut.conf`` file (found in testutils/fixtures) to include the device level specifics
 for your setup. The switch used for testing should have at least interfaces Ethernet1-7.
 
-* For running System tests, issue the following from the root of the goeapi directory: 
+* For running System tests, issue the following from the root of the goeapi directory:
 ```sh
-$ make testsys
+$ make systest
     or
 $ go test ./... -run SystemTest$
 ```
 * Similarly, Unit tests can be run via:
 ```sh
-$ make test 
+$ make unittest
     or
 $ go test ./... -run UnitTest$
 ```
