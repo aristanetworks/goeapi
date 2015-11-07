@@ -5,7 +5,13 @@ before_install:
   - go get golang.org/x/tools/cmd/cover
   - go get github.com/golang/lint/golint
   - go get golang.org/x/tools/cmd/vet
+install:
+  - go get ./...
+before_script:
+  # vet the code...fail build if error
+  - go vet ./...
+script:
+  - go get github.com/aristanetworks/goeapi
+  - make -j4 test GOTEST_FLAGS=-v
 after_success:
   - make coveragefunc
-script:
-  - make -j4 test GOTEST_FLAGS=-v
