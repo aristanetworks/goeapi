@@ -1,4 +1,5 @@
-# Arista eAPI Golang Library
+# Arista eAPI Golang Library [![Build Status](https://travis-ci.org/aristanetworks/goeapi.svg?branch=master)](https://travis-ci.org/aristanetworks/goeapi) [![GoDoc](https://godoc.org/github.com/aristanetworks/goeapi?status.png)](https://godoc.org/github.com/aristanetworks/goeapi)
+
 
 #### Table of Contents
 
