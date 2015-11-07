@@ -140,16 +140,19 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 	}
 	conn.Commands = nil
 	conn.Commands = append(conn.Commands, commands...)
+	resp := &goeapi.JSONRPCResponse{
+		Result: make([]map[string]interface{}, len(commands)),
+	}
+
 	if encoding == "json" {
-		return &goeapi.JSONRPCResponse{Result: make([]map[string]interface{}, len(commands))}, nil
-	} else {
-		resp := &goeapi.JSONRPCResponse{Result: make([]map[string]interface{}, len(commands))}
-		for idx := range resp.Result {
-			resp.Result[idx] = make(map[string]interface{})
-			resp.Result[idx]["output"] = ""
-		}
 		return resp, nil
 	}
+
+	for idx := range resp.Result {
+		resp.Result[idx] = make(map[string]interface{})
+		resp.Result[idx]["output"] = ""
+	}
+	return resp, nil
 }
 
 // Retreive the cached list of commands from the connection.
