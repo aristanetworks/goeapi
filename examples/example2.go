@@ -6,11 +6,13 @@ import (
 	"github.com/aristanetworks/goeapi"
 )
 
+// MyShowVlan ...
 type MyShowVlan struct {
 	SourceDetail string          `json:"sourceDetail"`
 	Vlans        map[string]Vlan `json:"vlans"`
 }
 
+// Vlan ...
 type Vlan struct {
 	Status     string               `json:"status"`
 	Name       string               `json:"name"`
@@ -18,11 +20,13 @@ type Vlan struct {
 	Dynamic    bool                 `json:"dynamic"`
 }
 
+// Interface ...
 type Interface struct {
 	Annotation      string `json:"annotation"`
 	PrivatePromoted bool   `json:"privatePromoted"`
 }
 
+// GetCmd ...
 func (s *MyShowVlan) GetCmd() string {
 	return "show vlan configured-ports"
 }
