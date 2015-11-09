@@ -256,6 +256,83 @@ interface Port-Channel10
 	}
 }
 
+func TestSwitchPortGetKeysReturned_UnitTest(t *testing.T) {
+	initFixture()
+	keys := []string{
+		"name", "mode", "access_vlan",
+		"trunk_native_vlan", "trunk_allowed_vlans",
+		"trunk_groups",
+	}
+	sp := SwitchPort(dummyNode)
+	spConfig := sp.Get("Port-Channel10")
+	if spConfig == nil {
+		t.Fatalf("Get(Port-Channel10) returned nil")
+	}
+	if len(keys) != len(spConfig) {
+		t.Fatalf("Mismatch in defined keys. Checking: %s, got %#v", keys, spConfig)
+	}
+	for _, val := range keys {
+		if _, found := spConfig[val]; !found {
+			t.Fatalf("Get() missing key %s", val)
+		}
+	}
+}
+
+func TestSwitchPortGet_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	spConfig := sp.Get("Port-Channel10")
+	if spConfig == nil {
+		t.Fatalf("Get(Port-Channel10) returned nil")
+	}
+	if spConfig.Name() != "Port-Channel10" || spConfig.Mode() != "access" || spConfig.AccessVlan() != "1" ||
+		spConfig.TrunkNativeVlan() != "1" || spConfig.TrunkAllowedVlans() != "1-4094" ||
+		spConfig.TrunkGroups() != "" {
+		t.Fatalf("Get(Port-Channel10) returned invalid data. Got %#v", spConfig)
+	}
+}
+
+func TestSwitchPortGetInterfaceNoSwitchport_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	if spConfig := sp.Get("Ethernet9"); spConfig != nil {
+		t.Fatalf("Get(Ethernet9) should return nil but got %#v", spConfig)
+	}
+}
+
+func TestSwitchPortGetInvalidInterface_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	if spConfig := sp.Get("TokenRing8"); spConfig != nil {
+		t.Fatalf("Get(TokenRing8) should return nil but got %#v", spConfig)
+	}
+}
+
+func TestSwitchPortGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	spConfig := sp.GetAll()
+	if spConfig == nil {
+		t.Fatalf("GetAll() returned nil")
+	}
+}
+
+func TestSwitchPortGetSection_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	if section := sp.GetSection("Port-Channel10"); section == "" {
+		t.Fatalf("GetSection(Port-Channel10) returned nil")
+	}
+}
+
+func TestSwitchPortGetSectionInvalid_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+	if section := sp.GetSection("TokenRing8"); section != "" {
+		t.Fatalf("GetSection(TokenRing8) should return nil but got %#v", section)
+	}
+}
+
 func TestSwitchPortCreate_UnitTest(t *testing.T) {
 	sp := SwitchPort(dummyNode)
 
@@ -487,7 +564,45 @@ func TestSwitchPortSetTrunkAllowedVlansDefault_UnitTest(t *testing.T) {
 	}
 }
 
-func TestSwitchPortSetTrunkGroupDefault_UnitTest(t *testing.T) {
+func TestSwitchPortSetTrunkGroupsAdd_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet8",
+		"switchport trunk group tg2",
+	}
+
+	sp.SetTrunkGroups("Ethernet8", []string{"tg1", "tg2"})
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkGroupsRemove_UnitTest(t *testing.T) {
+	initFixture()
+	sp := SwitchPort(dummyNode)
+
+	cmds := []string{
+		"interface Ethernet8",
+		"no switchport trunk group tg1",
+	}
+
+	sp.SetTrunkGroups("Ethernet8", []string{"tg2"})
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestSwitchPortSetTrunkGroupsDefault_UnitTest(t *testing.T) {
 	sp := SwitchPort(dummyNode)
 
 	for _, intf := range interfaceList {

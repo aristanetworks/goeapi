@@ -90,9 +90,9 @@ var STPIntfParsePortFastType = (*STPInterfaceEntity).parsePortfastType
 var BaseInterfaceParseShutdown = (*BaseInterfaceEntity).parseShutdown
 var BaseInterfaceParseDescription = (*BaseInterfaceEntity).parseDescription
 
-var EthernetParseSflow = (*EthernetInterfaceEntity).parseSflow
-var EthernetParseFlowControlSend = (*EthernetInterfaceEntity).parseFlowControlSend
-var EthernetParseFlowControlReceive = (*EthernetInterfaceEntity).parseFlowControlReceive
+//var EthernetParseSflow = (*EthernetInterfaceEntity).parseSflow
+//var EthernetParseFlowControlSend = (*EthernetInterfaceEntity).parseFlowControlSend
+//var EthernetParseFlowControlReceive = (*EthernetInterfaceEntity).parseFlowControlReceive
 
 var PortChannelParseMinimumLinks = (*PortChannelInterfaceEntity).parseMinimumLinks
 var PortChannelGetMembers = (*PortChannelInterfaceEntity).getMembers

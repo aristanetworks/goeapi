@@ -125,6 +125,50 @@ func TestIpInterfaceParseMtu_UnitTest(t *testing.T) {
 	}
 }
 
+func TestIpInterfaceGet_UnitTest(t *testing.T) {
+	initFixture()
+	ip := IPInterface(dummyNode)
+
+	intf, _ := ip.Get("Loopback0")
+	if intf == nil {
+		t.Fatalf("\"Loopback0\" not found")
+	}
+	if intf.Name() != "Loopback0" || intf.Address() != "1.1.1.1/32" ||
+		intf.Mtu() != "1500" {
+		t.Fatalf("Invalid data %#v", intf)
+	}
+}
+
+func TestIpInterfaceGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	ip := IPInterface(dummyNode)
+
+	intfMap := ip.GetAll()
+	if _, found := intfMap["Loopback0"]; !found {
+		t.Fatalf("\"Loopback0\" not found")
+	}
+}
+
+func TestIpInterfaceGetEthInterfaces_UnitTest(t *testing.T) {
+	initFixture()
+	ip := IPInterface(dummyNode)
+
+	interfaces := []string{
+		"Ethernet1", "Ethernet2", "Ethernet3", "Ethernet4",
+		"Ethernet5", "Ethernet6", "Ethernet7", "Ethernet8",
+		"Ethernet9",
+	}
+	intf := ip.GetEthInterfaces()
+	if len(intf) != len(interfaces) {
+		t.Fatalf("Mismatch in interfaces: expect: %q got %q", interfaces, intf)
+	}
+	for idx := range interfaces {
+		if interfaces[idx] != intf[idx] {
+			t.Fatalf("Index %d mismatch: expect: %q got %q", idx, interfaces, intf)
+		}
+	}
+}
+
 func TestIpInterfaceCreate_UnitTest(t *testing.T) {
 	ip := IPInterface(dummyNode)
 

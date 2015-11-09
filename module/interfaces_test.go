@@ -120,28 +120,456 @@ interface Ethernet1
 	}
 }
 
-func TestResourceInterfaceGet_SystemTest(t *testing.T) {
+func TestResourceInterfaceGet_UnitTest(t *testing.T) {
+	initFixture()
+	i := Interface(dummyNode)
+
+	keys := []string{
+		"name",
+		"type",
+		"shutdown",
+		"description",
+	}
+
+	config := i.Get("Loopback0")
+
+	for _, key := range keys {
+		if _, found := config[key]; !found {
+			t.Fatalf("Get(Loopback0) key mismatch expect: %q got %#v", keys, config)
+		}
+	}
 }
 
-func TestResourceInterfaceGetAll_SystemTest(t *testing.T) {
+func TestResourceInterfaceCreate_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+		}
+		i.Create(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceCreate_SystemTest(t *testing.T) {
+func TestResourceInterfaceDelete_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"no interface " + intf,
+		}
+		i.Delete(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceDelete_SystemTest(t *testing.T) {
+func TestResourceInterfaceDefault_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"default interface " + intf,
+		}
+		i.Default(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceDefault_SystemTest(t *testing.T) {
+func TestResourceInterfaceDescription_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default description",
+		}
+		tests := []struct {
+			in   string
+			want string
+		}{
+			{"Test description", "description Test description"},
+		}
+
+		for _, tt := range tests {
+			i.SetDescription(intf, tt.in)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceDescription_SystemTest(t *testing.T) {
+func TestResourceInterfaceDescriptionDefault_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default description",
+		}
+		i.SetDescriptionDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceSflowEnable_SystemTest(t *testing.T) {
+func TestResourceInterfaceSetShutDown_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default shutdown",
+		}
+		tests := []struct {
+			shut bool
+			want string
+		}{
+			{true, "shutdown"},
+			{false, "no shutdown"},
+		}
+
+		for _, tt := range tests {
+			i.SetShutdown(intf, tt.shut)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
 }
 
-func TestResourceInterfaceSflowDisable_SystemTest(t *testing.T) {
+func TestResourceInterfaceSetShutDownDefault_UnitTest(t *testing.T) {
+	i := Interface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default shutdown",
+		}
+		i.SetShutdownDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceParseSflow_UnitTest(t *testing.T) {
+	shortConfig := `
+interface Ethernet1
+   no shutdown
+   default load-interval
+   logging event link-status use-global
+   uc-tx-queue 7
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+   %s
+   no storm-control broadcast
+   no storm-control multicast
+   no storm-control all
+`
+	tests := [...]struct {
+		in   string
+		want bool
+	}{
+		{"sflow enable", true},
+		{"no sflow", false},
+	}
+
+	for _, tt := range tests {
+		testConfig := fmt.Sprintf(shortConfig, tt.in)
+		if got := parseSflow(testConfig); got != tt.want {
+			t.Fatalf("parseSflow() = %t; want %t", got, tt.want)
+		}
+	}
+}
+
+func TestEthernetInterfaceParseFlowControlSend_UnitTest(t *testing.T) {
+	shortConfig := `
+interface Ethernet1
+   no shutdown
+   default load-interval
+   logging event link-status use-global
+   no dcbx mode
+   no mac-address
+   no link-debounce
+   %s
+   no flowcontrol receive
+   no mac timestamp
+   no speed
+`
+	tests := [...]struct {
+		in   string
+		want string
+	}{
+		{"flowcontrol send on", "on"},
+		{"flowcontrol send off", "off"},
+		{"no flowcontrol send", "off"},
+	}
+
+	for _, tt := range tests {
+		testConfig := fmt.Sprintf(shortConfig, tt.in)
+		if got := parseFlowControlSend(testConfig); got != tt.want {
+			t.Fatalf("parseFlowControlSend() = %q; want %q", got, tt.want)
+		}
+	}
+}
+
+func TestEthernetInterfaceParseFlowControlReceive_UnitTest(t *testing.T) {
+	shortConfig := `
+interface Ethernet1
+   no shutdown
+   default load-interval
+   logging event link-status use-global
+   no dcbx mode
+   no mac-address
+   no link-debounce
+   no flowcontrol send
+   %s
+   no mac timestamp
+   no speed
+`
+	tests := [...]struct {
+		in   string
+		want string
+	}{
+		{"flowcontrol receive on", "on"},
+		{"flowcontrol receive off", "off"},
+		{"no flowcontrol receive", "off"},
+	}
+
+	for _, tt := range tests {
+		testConfig := fmt.Sprintf(shortConfig, tt.in)
+		if got := parseFlowControlReceive(testConfig); got != tt.want {
+			t.Fatalf("parseFlowControlReceive() = %q; want %q", got, tt.want)
+		}
+	}
+}
+
+func TestEthernetInterfaceGetCheckKeys_UnitTest(t *testing.T) {
+	initFixture()
+	i := EthernetInterface(dummyNode)
+
+	keys := []string{
+		"name",
+		"shutdown",
+		"description",
+		"sflow",
+		"flowcontrol_send",
+		"flowcontrol_receive",
+		"type",
+	}
+
+	intf := i.Get("Ethernet1")
+
+	if len(keys) != len(intf) {
+		t.Fatalf("Keys mismatch. Expect: %q got %#v", keys, intf)
+	}
+	for _, val := range keys {
+		if _, found := intf[val]; !found {
+			t.Fatalf("Key \"%s\" not found in neighbor", val)
+		}
+	}
+}
+
+func TestEthernetInterfaceCreate_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+	if ok := i.Create("Ethernet1"); ok {
+		t.Fatalf("Should not allow")
+	}
+}
+
+func TestEthernetInterfaceDelete_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+	if ok := i.Delete("Ethernet1"); ok {
+		t.Fatalf("Should not allow")
+	}
+}
+
+func TestEthernetInterfaceSetFlowcontrolSend_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default flowcontrol send",
+		}
+		tests := []struct {
+			enable bool
+			want   string
+		}{
+			{true, "flowcontrol send on"},
+			{false, "flowcontrol send off"},
+		}
+
+		for _, tt := range tests {
+			i.SetFlowcontrolSend(intf, tt.enable)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceSetFlowcontrolReceive_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default flowcontrol send",
+		}
+		tests := []struct {
+			enable bool
+			want   string
+		}{
+			{true, "flowcontrol receive on"},
+			{false, "flowcontrol receive off"},
+		}
+
+		for _, tt := range tests {
+			i.SetFlowcontrolReceive(intf, tt.enable)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceDisableFlowcontrolSend_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"no flowcontrol send",
+		}
+		i.DisableFlowcontrolSend(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceDisableFlowcontrolReceive_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"no flowcontrol receive",
+		}
+		i.DisableFlowcontrolReceive(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceSetSflow_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default sflow",
+		}
+		tests := []struct {
+			enable bool
+			want   string
+		}{
+			{true, "sflow enable"},
+			{false, "no sflow enable"},
+		}
+
+		for _, tt := range tests {
+			i.SetSflow(intf, tt.enable)
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestEthernetInterfaceSetSflowDefault_UnitTest(t *testing.T) {
+	i := EthernetInterface(dummyNode)
+
+	for _, intf := range interfaceList {
+		cmds := []string{
+			"interface " + intf,
+			"default sflow",
+		}
+		i.SetSflowDefault(intf)
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
 }
 
 func TestPortChannelParseMinimumLinks_UnitTest(t *testing.T) {
@@ -177,6 +605,136 @@ interface Port-Channel5
 		testConfig := fmt.Sprintf(shortConfig, tt.in)
 		if got := PortChannelParseMinimumLinks(&p, testConfig); got != tt.want {
 			t.Fatalf("parseMinimumLinks() = %q; want %q", got, tt.want)
+		}
+	}
+}
+
+func TestPortChannelGetCheckKeys_UnitTest(t *testing.T) {
+	initFixture()
+	p := PortChannel(dummyNode)
+
+	keys := []string{
+		"name",
+		"shutdown",
+		"description",
+		"type",
+		"lacp_mode",
+		"minimum_links",
+		"members",
+	}
+
+	pc := p.Get("Port-Channel1")
+
+	if len(keys) != len(pc) {
+		t.Fatalf("Keys mismatch. Expect: %q got %#v", keys, pc)
+	}
+	for _, val := range keys {
+		if _, found := pc[val]; !found {
+			t.Fatalf("Key \"%s\" not found in neighbor", val)
+		}
+	}
+}
+
+func TestPortChannelSetMinimumLinks_UnitTest(t *testing.T) {
+	p := PortChannel(dummyNode)
+	cmds := []string{
+		"interface Port-Channel1",
+		"default port-channel min-links",
+	}
+	tests := [...]struct {
+		val  int
+		want string
+		rc   bool
+	}{
+		{0, "", false},
+		{4, "port-channel min-links 4", true},
+		{8, "port-channel min-links 8", true},
+		{17, "", false},
+	}
+
+	for test, tt := range tests {
+		if got := p.SetMinimumLinks("Port-Channel1", tt.val); got != tt.rc {
+			t.Fatalf("Test[%d] Expected \"%t\" got \"%t\"", test, tt.rc, got)
+		}
+		if tt.rc {
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Test[%d] Expected \"%q\" got \"%q\"", test, cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestPortChannelSetMembers_UnitTest(t *testing.T) {
+	p := PortChannel(dummyNode)
+	cmds := []string{
+		"interface Ethernet6",
+		"no channel-group 1",
+		"interface Ethernet7",
+		"channel-group 1 mode on",
+	}
+	members := []string{"Ethernet5", "Ethernet7"}
+	p.SetMembers("Port-Channel1", members...)
+
+	t.Skip("skipping test")
+
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestPortChannelSetLacpMode_UnitTest(t *testing.T) {
+	p := PortChannel(dummyNode)
+	cmds := []string{
+		"interface Ethernet5",
+		"no channel-group 1",
+		"interface Ethernet6",
+		"no channel-group 1",
+		"interface Ethernet5",
+		"channel-group 1 mode active",
+		"interface Ethernet6",
+		"channel-group 1 mode active",
+	}
+	p.SetLacpMode("Port-Channel1", "active")
+
+	t.Skip("skipping test")
+
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestPortChannelSetLacpModeInvalid_UnitTest(t *testing.T) {
+	p := PortChannel(dummyNode)
+	if ok := p.SetLacpMode("Port-Channel1", "InvalidParam"); ok {
+		t.Fatalf("Passed/Accepted Invalid parameter")
+	}
+}
+
+func TestPortChannelSetMinimumLinksDefault_UnitTest(t *testing.T) {
+	p := PortChannel(dummyNode)
+	cmds := []string{
+		"interface Port-Channel1",
+		"default port-channel min-links",
+	}
+	p.SetMinimumLinksDefault("Port-Channel1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
 		}
 	}
 }
@@ -482,6 +1040,7 @@ interface Vxlan1
 		in   string
 		want string
 	}{
+		{"", ""},
 		{"vxlan udp-port 4789", "4789"},
 		{"vxlan udp-port 1024", "1024"},
 		{"vxlan udp-port 65534", "65534"},
@@ -506,15 +1065,30 @@ interface Vxlan1
    vxlan source-interface Loopback0
    no vxlan controller-client
    vxlan udp-port 4789
-   vxlan vlan 10 vni 10
-   vxlan vlan 10 flood vtep 3.3.3.3 4.4.4.4
+   %s
+   %s
    vxlan flood vtep 1.1.1.1 2.2.2.2
    no vxlan vlan flood vtep
    no vxlan learn-restrict vtep
    no vxlan vlan learn-restrict vtep
 !
 `
-	VxlanParseVlans(&v, shortConfig)
+	tests := [...]struct {
+		in1 string
+		in2 string
+	}{
+		{"", "no vxlan vlan flood vtep"},
+		{"vxlan vlan 10 vni 10", ""},
+		{"", "vxlan vlan 10 flood vtep 3.3.3.3 4.4.4.4"},
+	}
+
+	for _, tt := range tests {
+		testConfig := fmt.Sprintf(shortConfig, tt.in1, tt.in2)
+		conf := VxlanParseVlans(&v, testConfig)
+		if conf == nil {
+			t.Fatalf("parseVlans()")
+		}
+	}
 }
 
 func TestVxlanParseFloodList_UnitTest(t *testing.T) {
@@ -549,6 +1123,262 @@ interface Vxlan1
 		testConfig := fmt.Sprintf(shortConfig, tt.in)
 		if got := VxlanParseFloodList(&v, testConfig); got != tt.want {
 			t.Fatalf("parseSourceInterface() = %q; want %q", got, tt.want)
+		}
+	}
+}
+
+func TestVxlanInterfaceGet_UnitTest(t *testing.T) {
+	initFixture()
+	v := Vxlan(dummyNode)
+
+	keys := []string{
+		"name",
+		"type",
+		"shutdown",
+		"description",
+		"source_interface",
+		"multicast_group",
+		"udp_port",
+		"flood_list",
+	}
+
+	config := v.Get("Vxlan1")
+
+	for _, key := range keys {
+		if _, found := config[key]; !found {
+			t.Fatalf("Get(Vxlan1) key mismatch expect: %q got %#v", keys, config)
+		}
+	}
+}
+
+func TestVxlanInterfaceSetSourceInterface_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan source-interface",
+	}
+	tests := [...]struct {
+		val  string
+		want string
+	}{
+		{"", "no vxlan source-interface"},
+		{"Loopback0", "vxlan source-interface Loopback0"},
+	}
+
+	for _, tt := range tests {
+		v.SetSourceInterface("Vxlan1", tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestVxlanInterfaceSetSourceInterfaceDefault_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan source-interface",
+	}
+	v.SetSourceInterfaceDefault("Vxlan1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceSetMulticastGroup_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan multicast-group",
+	}
+	tests := [...]struct {
+		val  string
+		want string
+	}{
+		{"", "no vxlan multicast-group"},
+		{"239.10.10.10", "vxlan multicast-group 239.10.10.10"},
+	}
+
+	for _, tt := range tests {
+		v.SetMulticastGroup("Vxlan1", tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestVxlanInterfaceSetMulticastGroupDefault_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan multicast-group",
+	}
+	v.SetMulticastGroupDefault("Vxlan1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceSetUDPPort_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan udp-port",
+	}
+	tests := [...]struct {
+		val  int
+		want string
+		rc   bool
+	}{
+		{1, "", false},
+		{1023, "", false},
+		{1024, "vxlan udp-port 1024", true},
+		{8000, "vxlan udp-port 8000", true},
+		{65535, "vxlan udp-port 65535", true},
+		{65536, "", false},
+	}
+
+	for _, tt := range tests {
+		v.SetUDPPort("Vxlan1", tt.val)
+		cmds[1] = tt.want
+		if tt.rc {
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestVxlanInterfaceSetUDPPortDefault_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"default vxlan udp-port",
+	}
+	v.SetUDPPortDefault("Vxlan1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceAddVtepGlobalFlood_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"vxlan flood vtep add 1.1.1.1",
+	}
+	v.AddVtepGlobalFlood("Vxlan1", "1.1.1.1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceAddVtepLocalFlood_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"vxlan vlan 10 flood vtep add 1.1.1.1",
+	}
+	v.AddVtepLocalFlood("Vxlan1", "1.1.1.1", 10)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceRemoveVtepGlobalFlood_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"vxlan flood vtep remove 1.1.1.1",
+	}
+	v.RemoveVtepGlobalFlood("Vxlan1", "1.1.1.1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceRemoveVtepLocalFlood_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"vxlan vlan 10 flood vtep remove 1.1.1.1",
+	}
+	v.RemoveVtepLocalFlood("Vxlan1", "1.1.1.1", 10)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceUpdateVlan_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"vxlan vlan 10 vni 10",
+	}
+	v.UpdateVlan("Vxlan1", 10, 10)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVxlanInterfaceRemoveVlan_UnitTest(t *testing.T) {
+	v := Vxlan(dummyNode)
+	cmds := []string{
+		"interface Vxlan1",
+		"no vxlan vlan 10 vni",
+	}
+	v.RemoveVlan("Vxlan1", 10)
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
 		}
 	}
 }

@@ -235,7 +235,6 @@ func TestSTPIntfParsePortFastType_UnitTest(t *testing.T) {
 			t.Fatalf("parsePortFastType(%s) = %s; want %s", tt.in, got, tt.want)
 		}
 	}
-
 }
 
 func TestSTPIntfGetKeysReturned_UnitTest(t *testing.T) {
@@ -245,6 +244,14 @@ func TestSTPIntfGetKeysReturned_UnitTest(t *testing.T) {
 		if _, found := config[val]; !found {
 			t.Fatalf("Get() missing key %s", val)
 		}
+	}
+}
+
+func TestSTPIntfGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	stp := STPInterfaces(dummyNode)
+	if config := stp.GetAll(); config == nil {
+		t.Fatalf("GetAll() returned nil")
 	}
 }
 

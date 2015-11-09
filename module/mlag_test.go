@@ -244,6 +244,45 @@ no mpls routing`
 		t.Fatalf("parseShutdown() = %t; want false", got)
 	}
 }
+func TestMlagIsEqual_UnitTest(t *testing.T) {
+	initFixture()
+	mlag := Mlag(dummyNode)
+	config := mlag.Get()
+	configTemp := MlagConfig{
+		config: GlobalMlagConfig{
+			"domain_id":       "",
+			"local_interface": "",
+			"peer_address":    "",
+			"peer_link":       "",
+			"shutdown":        "false",
+		},
+		interfaces: InterfaceMlagConfig{
+			"Port-Channel10": "10",
+		},
+	}
+	if config.isEqual(configTemp) == false {
+		t.Fatalf("Unequal configs seen")
+	}
+}
+
+func TestMlagGet_UnitTest(t *testing.T) {
+	initFixture()
+	mlag := Mlag(dummyNode)
+	config := mlag.Get()
+	if config.DomainID() != "" || config.LocalInterface() != "" ||
+		config.PeerAddress() != "" || config.PeerLink() != "" ||
+		config.Shutdown() != "false" || config.InterfaceConfig("Port-Channel10") != "10" {
+		t.Fatalf("Get() invalid return: %#v", config)
+	}
+}
+
+func TestMlagGetSection_UnitTest(t *testing.T) {
+	initFixture()
+	mlag := Mlag(dummyNode)
+	if config := mlag.GetSection(); config == "" {
+		t.Fatalf("GetSection() returned nil")
+	}
+}
 
 func TestMlagSetDomainID_UnitTest(t *testing.T) {
 	mlag := Mlag(dummyNode)
@@ -472,20 +511,20 @@ func TestMlagSetShutdownDefault_UnitTest(t *testing.T) {
 func TestMlagID_UnitTest(t *testing.T) {
 	mlag := Mlag(dummyNode)
 	cmds := []string{
-		"mlag configuration",
-		"default domain-id",
+		"interface Ethernet1",
+		"default mlag",
 	}
 	tests := []struct {
 		in   string
 		want string
 	}{
-		{"", "no domain-id"},
-		{"test", "domain-id test"},
-		{"test4", "domain-id test4"},
+		{"", "no mlag"},
+		{"1", "mlag 1"},
+		{"50", "mlag 50"},
 	}
 
 	for _, tt := range tests {
-		mlag.SetDomainID(tt.in)
+		mlag.SetMlagID("Ethernet1", tt.in)
 		cmds[1] = tt.want
 		// first two commands are 'enable', 'configure terminal'
 		commands := dummyConnection.GetCommands()[2:]

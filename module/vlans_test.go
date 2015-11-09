@@ -442,7 +442,8 @@ func TestVlanSetTrunkGroupDefault_UnitTest(t *testing.T) {
 	}
 }
 
-func TestVlanSetTrunkGroup_UnitTest(t *testing.T) {
+func TestVlanSetTrunkGroupAdd_UnitTest(t *testing.T) {
+	initFixture()
 	vlan := Vlan(dummyNode)
 
 	cmds := []string{
@@ -450,6 +451,24 @@ func TestVlanSetTrunkGroup_UnitTest(t *testing.T) {
 		"trunk group tg2",
 	}
 	vlan.SetTrunkGroup("10", []string{"tg1", "tg2"})
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestVlanSetTrunkGroupDel_UnitTest(t *testing.T) {
+	initFixture()
+	vlan := Vlan(dummyNode)
+
+	cmds := []string{
+		"vlan 10",
+		"no trunk group tg1",
+	}
+	vlan.SetTrunkGroup("10", []string{"tg2"})
 	// first two commands are 'enable', 'configure terminal'
 	commands := dummyConnection.GetCommands()[2:]
 	for idx, val := range commands {
