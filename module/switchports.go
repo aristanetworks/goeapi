@@ -467,12 +467,8 @@ func (s *SwitchPortEntity) SetTrunkAllowedVlansDefault(name string) bool {
 //    True if the config operation succeeds otherwise False
 func (s *SwitchPortEntity) SetTrunkGroups(intf string, value []string) bool {
 	var failure = false
-	var currentValue []string
 
-	currentValue = strings.Split(s.Get(intf)["trunk_groups"], ",")
-	if len(currentValue) == 1 {
-		currentValue = nil
-	}
+	currentValue := strings.Split(s.Get(intf)["trunk_groups"], ",")
 
 	diff := findDiff(value, currentValue)
 	for _, name := range diff {

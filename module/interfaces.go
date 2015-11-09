@@ -129,26 +129,26 @@ func (i *BaseInterfaceEntity) Default(name string) bool {
 // SetDescription sets the description on the interface name(sting) to value(string)
 func (i *BaseInterfaceEntity) SetDescription(name string, value string) bool {
 	cmd := i.CommandBuilder("description", value, false, true)
-	return i.Configure(cmd)
+	return i.ConfigureInterface(name, cmd)
 }
 
 // SetDescriptionDefault reverts back to the default description value
 func (i *BaseInterfaceEntity) SetDescriptionDefault(name string) bool {
 	cmd := i.CommandBuilder("description", "", true, false)
-	return i.Configure(cmd)
+	return i.ConfigureInterface(name, cmd)
 }
 
-// SetShutDown sets the interface name(string) to shutdown(true)
+// SetShutdown sets the interface name(string) to shutdown(true)
 // or no-shutdown(false)
-func (i *BaseInterfaceEntity) SetShutDown(name string, shut bool) bool {
+func (i *BaseInterfaceEntity) SetShutdown(name string, shut bool) bool {
 	cmd := i.CommandBuilder("shutdown", "", false, shut)
-	return i.Configure(cmd)
+	return i.ConfigureInterface(name, cmd)
 }
 
-// SetShutDownDefault reverts back to the default shutdown config for interface
-func (i *BaseInterfaceEntity) SetShutDownDefault(name string) bool {
+// SetShutdownDefault reverts back to the default shutdown config for interface
+func (i *BaseInterfaceEntity) SetShutdownDefault(name string) bool {
 	cmd := i.CommandBuilder("shutdown", "", true, false)
-	return i.Configure(cmd)
+	return i.ConfigureInterface(name, cmd)
 }
 
 ///////////////////////////////
@@ -159,6 +159,12 @@ type EthernetInterfaceEntity struct {
 	*BaseInterfaceEntity
 }
 
+// EthernetInterface factory function to initiallize EthernetInterfaceEntity resource
+// given a Node
+func EthernetInterface(node *goeapi.Node) *EthernetInterfaceEntity {
+	return &EthernetInterfaceEntity{&BaseInterfaceEntity{&AbstractBaseEntity{node}}}
+}
+
 // Get returns interface as a set of key/value pairs in InterfaceConfig
 func (e *EthernetInterfaceEntity) Get(name string) InterfaceConfig {
 	parent := `interface\s+` + name
@@ -166,22 +172,22 @@ func (e *EthernetInterfaceEntity) Get(name string) InterfaceConfig {
 
 	resource := e.BaseInterfaceEntity.Get(name)
 	resource["type"] = "ethernet"
-	resource["sflow"] = strconv.FormatBool(e.parseSflow(config))
-	resource["flowcontrol_send"] = e.parseFlowControlSend(config)
-	resource["flowcontrol_receive"] = e.parseFlowControlReceive(config)
+	resource["sflow"] = strconv.FormatBool(parseSflow(config))
+	resource["flowcontrol_send"] = parseFlowControlSend(config)
+	resource["flowcontrol_receive"] = parseFlowControlReceive(config)
 	return resource
 }
 
 // parseSflow parses the given config(string) and returns true(bool)
 // if sflow configured
-func (e *EthernetInterfaceEntity) parseSflow(config string) bool {
+func parseSflow(config string) bool {
 	matched, _ := regexp.MatchString("no sflow", config)
 	return !matched
 }
 
 // parseFlowControlSend parses the given config and returns the flowcontrol
 // send operation parameter
-func (e *EthernetInterfaceEntity) parseFlowControlSend(config string) string {
+func parseFlowControlSend(config string) string {
 	re := regexp.MustCompile(`(?m)flowcontrol send (\w+)$`)
 	match := re.FindStringSubmatch(config)
 	if match == nil {
@@ -192,7 +198,7 @@ func (e *EthernetInterfaceEntity) parseFlowControlSend(config string) string {
 
 // parseFlowControlReceive parses the given config and returns the flowcontrol
 // receive operation parameter
-func (e *EthernetInterfaceEntity) parseFlowControlReceive(config string) string {
+func parseFlowControlReceive(config string) string {
 	re := regexp.MustCompile(`(?m)flowcontrol receive (\w+)$`)
 	match := re.FindStringSubmatch(config)
 	if match == nil {
@@ -213,16 +219,16 @@ func (e *EthernetInterfaceEntity) Delete(name string) bool {
 
 // SetFlowcontrolSend configures the interface flowcontrol send value(true: on)
 func (e *EthernetInterfaceEntity) SetFlowcontrolSend(name string, value bool) bool {
-	return e.SetFlowcontrol(name, "send", value)
+	return e.setFlowcontrol(name, "send", value)
 }
 
 // SetFlowcontrolReceive configures the interface flowcontrol receive value(true: on)
 func (e *EthernetInterfaceEntity) SetFlowcontrolReceive(name string, value bool) bool {
-	return e.SetFlowcontrol(name, "receive", value)
+	return e.setFlowcontrol(name, "receive", value)
 }
 
-// SetFlowcontrol configures the interface flowcontrol value
-func (e *EthernetInterfaceEntity) SetFlowcontrol(name string, direction string, value bool) bool {
+// setFlowcontrol configures the interface flowcontrol value
+func (e *EthernetInterfaceEntity) setFlowcontrol(name string, direction string, value bool) bool {
 	var str string
 	if value {
 		str = "flowcontrol " + direction + " on"
@@ -236,8 +242,18 @@ func (e *EthernetInterfaceEntity) SetFlowcontrol(name string, direction string, 
 	return e.Configure(cmds...)
 }
 
-// ClearFlowcontrol Clears the interface flowcontrol
-func (e *EthernetInterfaceEntity) ClearFlowcontrol(name string, direction string) bool {
+// DisableFlowcontrolSend disables the interface flowcontrol send value
+func (e *EthernetInterfaceEntity) DisableFlowcontrolSend(name string) bool {
+	return e.disableFlowcontrol(name, "send")
+}
+
+// DisableFlowcontrolReceive disables the interface flowcontrol receive value
+func (e *EthernetInterfaceEntity) DisableFlowcontrolReceive(name string) bool {
+	return e.disableFlowcontrol(name, "receive")
+}
+
+// DisableFlowcontrol disables the interface flowcontrol
+func (e *EthernetInterfaceEntity) disableFlowcontrol(name string, direction string) bool {
 	cmds := []string{
 		"interface " + name,
 		"no flowcontrol " + direction,
@@ -255,6 +271,16 @@ func (e *EthernetInterfaceEntity) SetSflow(name string, value bool) bool {
 	cmds := []string{
 		"interface " + name,
 		str,
+	}
+	return e.Configure(cmds...)
+}
+
+// SetSflowDefault configures the defalt sFlow state on the
+// interface name(string)
+func (e *EthernetInterfaceEntity) SetSflowDefault(name string) bool {
+	cmds := []string{
+		"interface " + name,
+		"default sflow",
 	}
 	return e.Configure(cmds...)
 }
@@ -284,7 +310,7 @@ func (p *PortChannelInterfaceEntity) Get(name string) InterfaceConfig {
 	resource := p.BaseInterfaceEntity.Get(name)
 	resource["type"] = "portchannel"
 	resource["lacp_mode"] = p.getLacpMode(name)
-	resource["minumum_links"] = p.parseMinimumLinks(config)
+	resource["minimum_links"] = p.parseMinimumLinks(config)
 	resource["members"] = strings.Join(p.getMembers(name), ",")
 	return resource
 }
@@ -525,7 +551,7 @@ func (v *VxlanInterfaceEntity) parseVlans(config string) VxlanConfigCollection {
 				collection[vid]["vni"] = match[1]
 			}
 
-			reStr = `vxlan vlan ` + vid + ` flood vtep (.*)$`
+			reStr = `(?m)vxlan vlan ` + vid + ` flood vtep (.*)$`
 			reLocalFld := regexp.MustCompile(reStr)
 			match = reLocalFld.FindStringSubmatch(config)
 			if match == nil {
@@ -553,10 +579,12 @@ func (v *VxlanInterfaceEntity) parseFloodList(config string) string {
 // SetSourceInterface sets the vxlan interface to the given value(string).
 // If empty string is specified, then default setting is used.
 func (v *VxlanInterfaceEntity) SetSourceInterface(name string, value string) bool {
+	var cmd string
 	if value == "" {
-		return v.SetSourceInterfaceDefault(name)
+		cmd = v.CommandBuilder("vxlan source-interface", value, false, false)
+	} else {
+		cmd = v.CommandBuilder("vxlan source-interface", value, false, true)
 	}
-	cmd := v.CommandBuilder("vxlan source-interface", value, false, true)
 	return v.ConfigureInterface(name, cmd)
 }
 
@@ -571,10 +599,12 @@ func (v *VxlanInterfaceEntity) SetSourceInterfaceDefault(name string) bool {
 // value specified.
 // If empty string is specified, then default setting is used.
 func (v *VxlanInterfaceEntity) SetMulticastGroup(name string, value string) bool {
+	var cmd string
 	if value == "" {
-		return v.SetMulticastGroupDefault(name)
+		cmd = v.CommandBuilder("vxlan multicast-group", value, false, false)
+	} else {
+		cmd = v.CommandBuilder("vxlan multicast-group", value, false, true)
 	}
-	cmd := v.CommandBuilder("vxlan multicast-group", value, false, true)
 	return v.ConfigureInterface(name, cmd)
 }
 
