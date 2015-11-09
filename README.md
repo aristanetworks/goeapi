@@ -1,4 +1,4 @@
-# Arista eAPI Golang Library [![Build Status](https://travis-ci.org/aristanetworks/goeapi.svg?branch=master)](https://travis-ci.org/aristanetworks/goeapi) [![codecov.io](http://codecov.io/github/aristanetworks/goeapi/coverage.svg?branch=master)](http://codecov.io/github/aristanetworks/goeapi?branch=master) [![GoDoc](https://godoc.org/github.com/aristanetworks/goeapi?status.png)](https://godoc.org/github.com/aristanetworks/goeapi)
+# Arista eAPI Go Library [![Build Status](https://travis-ci.org/aristanetworks/goeapi.svg?branch=master)](https://travis-ci.org/aristanetworks/goeapi) [![codecov.io](http://codecov.io/github/aristanetworks/goeapi/coverage.svg?branch=master)](http://codecov.io/github/aristanetworks/goeapi?branch=master) [![GoDoc](https://godoc.org/github.com/aristanetworks/goeapi?status.png)](https://godoc.org/github.com/aristanetworks/goeapi)
 
 
 #### Table of Contents
