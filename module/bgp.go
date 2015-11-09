@@ -645,8 +645,8 @@ func (b *BgpNeighborsEntity) SetShutdownDefault(name string) bool {
 // SetSendCommunity sets the neighbor name(string) send-community configuration to
 // value(string).
 // Returns true(bool) if the commands complete successfully
-func (b *BgpNeighborsEntity) SetSendCommunity(name string, value string) bool {
-	cmd := b.CommandBuilder(name, "send-community", value, false, true)
+func (b *BgpNeighborsEntity) SetSendCommunity(name string, enable bool) bool {
+	cmd := b.CommandBuilder(name, "send-community", "", false, enable)
 	return b.Configure(cmd)
 }
 
@@ -686,7 +686,7 @@ func (b *BgpNeighborsEntity) SetRouteMapIn(name string, value string) bool {
 // SetRouteMapInDefault sets the default configuration value for the neighbor
 // inbound route-map configuration
 // Returns true(bool) if the commands complete successfully
-func (b *BgpNeighborsEntity) SetRouteMapInDefault(name string, value string) bool {
+func (b *BgpNeighborsEntity) SetRouteMapInDefault(name string) bool {
 	cmd := b.CommandBuilder(name, "route-map", "", true, false)
 	cmd = cmd + " in"
 	return b.Configure(cmd)
