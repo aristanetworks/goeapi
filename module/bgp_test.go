@@ -269,6 +269,26 @@ func TestBgpGet_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpNetworkGetters_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+	config := bgp.Get()
+	networks := config.Networks()
+	if networks == nil || networks[0].Prefix() != "172.16.10.0" ||
+		networks[0].MaskLen() != "24" || networks[0].RouteMap() != "" {
+		t.Fatalf("Invalid result from Networks(): %#v", networks)
+	}
+}
+
+func TestBgpNeigborsInstance_UnitTest(t *testing.T) {
+	initFixture()
+	bgp := Bgp(dummyNode)
+	n := bgp.Neighbors()
+	if n == nil {
+		t.Fatalf("Invalid result from Neighbors(): nil")
+	}
+}
+
 func TestBgpGetSection_UnitTest(t *testing.T) {
 	initFixture()
 	bgp := Bgp(dummyNode)
@@ -558,6 +578,455 @@ func TestBgpRemoveNetwork_UnitTest(t *testing.T) {
 		"no network 172.16.10.1/24",
 	}
 	bgp.RemoveNetwork("172.16.10.1", "24")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsGet_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	neighbor := n.Get("test")
+
+	keys := []string{
+		"peer_group",
+		"remote_as",
+		"send_community",
+		"shutdown",
+		"description",
+		"next_hop_self",
+		"route_in_map",
+		"route_out_map",
+	}
+	if len(keys) != len(neighbor) {
+		t.Fatalf("Keys mismatch. Expect: %q got %#v", keys, neighbor)
+	}
+	for _, val := range keys {
+		if _, found := neighbor[val]; !found {
+			t.Fatalf("Key \"%s\" not found in neighbor", val)
+		}
+	}
+}
+
+func TestBgpNeigborsGetAll_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	neighbors := n.GetAll()
+	if neighbors == nil {
+
+	}
+}
+
+func TestBgpNeigborsCreate_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"neighbor test shutdown",
+	}
+	n.Create("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsDelete_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"no neighbor test",
+	}
+	n.Delete("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetPeerGroup_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor 172.16.10.1 peer-group",
+	}
+
+	tests := []struct {
+		neighbor string
+		gp       string
+		want     string
+		rc       bool
+	}{
+		{"172.16.10.1", "test", "neighbor 172.16.10.1 peer-group test", true},
+		{"172.16.10.300", "test", "", false},
+		{"", "test", "", false},
+	}
+
+	for idx, tt := range tests {
+		if ok := n.SetPeerGroup(tt.neighbor, tt.gp); ok != tt.rc {
+			t.Fatalf("Expected \"%t\" got \"%t\" for test %d", tt.rc, ok, idx)
+		}
+		if tt.rc {
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("test[%d] Expected \"%q\" got \"%q\"", idx, cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetPeerGroupDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor 172.16.10.1 peer-group",
+	}
+	n.SetPeerGroupDefault("172.16.10.1")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetRemoteAS_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test remote-as",
+	}
+
+	tests := []struct {
+		neighbor string
+		as       string
+		want     string
+		rc       bool
+	}{
+		{"172.16.10.1", "65000", "neighbor 172.16.10.1 remote-as 65000", true},
+	}
+
+	for idx, tt := range tests {
+		if ok := n.SetRemoteAS(tt.neighbor, tt.as); ok != tt.rc {
+			t.Fatalf("Expected \"%t\" got \"%t\" for test %d", tt.rc, ok, idx)
+		}
+		if tt.rc {
+			cmds[1] = tt.want
+			// first two commands are 'enable', 'configure terminal'
+			commands := dummyConnection.GetCommands()[2:]
+			for idx, val := range commands {
+				if cmds[idx] != val {
+					t.Fatalf("test[%d] Expected \"%q\" got \"%q\"", idx, cmds, commands)
+				}
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetRemoteASDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test remote-as",
+	}
+	n.SetRemoteASDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetShutdown_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test shutdown",
+	}
+
+	tests := []struct {
+		neighbor string
+		enable   bool
+		want     string
+	}{
+		{"test", true, "neighbor test shutdown"},
+		{"test", false, "no neighbor test shutdown"},
+	}
+
+	for _, tt := range tests {
+		n.SetShutdown(tt.neighbor, tt.enable)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetShutdownDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test shutdown",
+	}
+	n.SetShutdownDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetSendCommunity_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test send-community",
+	}
+
+	tests := []struct {
+		neighbor string
+		val      bool
+		want     string
+	}{
+		{"test", true, "neighbor test send-community"},
+		{"test", false, "no neighbor test send-community"},
+	}
+
+	for _, tt := range tests {
+		n.SetSendCommunity(tt.neighbor, tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetSendCommunityDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test send-community",
+	}
+	n.SetSendCommunityDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetNextHopSelf_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test send-community",
+	}
+
+	tests := []struct {
+		neighbor string
+		val      bool
+		want     string
+	}{
+		{"test", true, "neighbor test next-hop-self"},
+		{"test", false, "no neighbor test next-hop-self"},
+	}
+
+	for _, tt := range tests {
+		n.SetNextHopSelf(tt.neighbor, tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetNextHopSelfDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test next-hop-self",
+	}
+	n.SetNextHopSelfDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetRouteMapIn_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test route-map in",
+	}
+
+	tests := []struct {
+		neighbor string
+		val      string
+		want     string
+	}{
+		{"test", "TEST_RM", "neighbor test route-map TEST_RM in"},
+	}
+
+	for _, tt := range tests {
+		n.SetRouteMapIn(tt.neighbor, tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetRouteMapInDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test route-map in",
+	}
+	n.SetRouteMapInDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetRouteMapOut_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test route-map out",
+	}
+	tests := []struct {
+		neighbor string
+		val      string
+		want     string
+	}{
+		{"test", "TEST_RM", "neighbor test route-map TEST_RM out"},
+	}
+
+	for _, tt := range tests {
+		n.SetRouteMapOut(tt.neighbor, tt.val)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetRouteMapOutDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test route-map out",
+	}
+	n.SetRouteMapOutDefault("test")
+	// first two commands are 'enable', 'configure terminal'
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestBgpNeigborsSetDescription_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test description",
+	}
+
+	tests := []struct {
+		in   string
+		want string
+	}{
+		{"this is a test", "neighbor test description this is a test"},
+	}
+
+	for _, tt := range tests {
+		n.SetDescription("test", tt.in)
+		cmds[1] = tt.want
+		// first two commands are 'enable', 'configure terminal'
+		commands := dummyConnection.GetCommands()[2:]
+		for idx, val := range commands {
+			if cmds[idx] != val {
+				t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+			}
+		}
+	}
+}
+
+func TestBgpNeigborsSetDescriptionDefault_UnitTest(t *testing.T) {
+	initFixture()
+	n := Bgp(dummyNode).Neighbors()
+	cmds := []string{
+		"router bgp 65000",
+		"default neighbor test description",
+	}
+	n.SetDescriptionDefault("test")
 	// first two commands are 'enable', 'configure terminal'
 	commands := dummyConnection.GetCommands()[2:]
 	for idx, val := range commands {
