@@ -89,10 +89,16 @@ func findDiff(slice1 []string, slice2 []string) []string {
 	hash := map[string]int{}
 
 	for _, val := range slice2 {
+		if val == "" {
+			continue
+		}
 		hash[val] = 1
 	}
 
 	for _, val := range slice1 {
+		if val == "" {
+			continue
+		}
 		if _, found := hash[val]; found {
 			continue
 		}
