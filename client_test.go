@@ -189,12 +189,145 @@ func TestConfigLoadRest_UnitTest(t *testing.T) {
 	duts = nil
 	LoadConfig(GetFixture("dut.conf"))
 	conns := Connections()
-	fmt.Println("Connections: ", conns)
 	for _, name := range conns {
 		if name != "localhost" {
 			node, _ := ConnectTo(name)
 			duts = append(duts, node)
 		}
+	}
+}
+
+func TestClientRunningConfig_UnitTest(t *testing.T) {
+	dummyNode.refresh()
+	if config := dummyNode.RunningConfig(); config == "" {
+		t.Fatalf("No config returned")
+	}
+	if config := dummyNode.RunningConfig(); config == "" {
+		t.Fatalf("No config returned")
+	}
+}
+func TestClientStartupConfig_UnitTest(t *testing.T) {
+	dummyNode.refresh()
+	if config := dummyNode.StartupConfig(); config == "" {
+		t.Fatalf("No config returned")
+	}
+	if config := dummyNode.StartupConfig(); config == "" {
+		t.Fatalf("No config returned")
+	}
+}
+
+func TestClientGetConfig_UnitTest(t *testing.T) {
+	tests := [...]struct {
+		config string
+		params string
+		rc     bool
+	}{
+		{"running-config", "all", true},
+		{"startup-config", "", true},
+		{"bogus-config", "", false},
+	}
+	for idx, tt := range tests {
+		_, err := dummyNode.GetConfig(tt.config, tt.params)
+		if (err == nil) != tt.rc {
+			t.Fatalf("Test[%d] Expected %t in eval of (err == nil): err:%#v", idx, tt.rc, err)
+		}
+	}
+}
+
+func TestClientGetSection_UnitTest(t *testing.T) {
+	tests := [...]struct {
+		reg    string
+		config string
+		rc     bool
+	}{
+		{`(?m)^interface Ethernet1$`, "running-config", true},
+		{`(?m)^interface Ethernet1$`, "", true},
+		{`(?m)^interface Ethernet1$`, "startup-config", true},
+		{`(?=>)^interface Ethernet1$`, "running-config", false},
+		{`(?m)^interface Ethernet1$`, "bogus-config", false},
+		{`(?m)^interface TokenRing1$`, "running-config", false},
+	}
+	for idx, tt := range tests {
+		_, err := dummyNode.GetSection(tt.reg, tt.config)
+		if (err == nil) != tt.rc {
+			t.Fatalf("Test[%d] Expected %t in eval of (err == nil): err:%#v", idx, tt.rc, err)
+		}
+	}
+}
+
+func TestClientConfig_UnitTest(t *testing.T) {
+	cmds := []string{
+		"interface Ethernet1",
+		"no flowcontrol send",
+		"ip address 1.1.1.1/24",
+		"no shut",
+	}
+	dummyNode.SetAutoRefresh(true)
+	dummyNode.Config(cmds...)
+	commands := dummyConnection.GetCommands()[2:]
+	for idx, val := range commands {
+		if cmds[idx] != val {
+			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
+		}
+	}
+}
+
+func TestClientEnable_UnitTest(t *testing.T) {
+	tests := [...]struct {
+		in []string
+		rc bool
+	}{
+		{[]string{"configure terminal"}, false},
+		{[]string{"configure    terminal"}, false},
+		{[]string{"  configure"}, false},
+		{[]string{"configure"}, false},
+		{[]string{"show running-config"}, true},
+	}
+	dummyNode.EnableAuthentication("root")
+	for idx, tt := range tests {
+		if _, got := dummyNode.Enable(tt.in); (got == nil) != tt.rc {
+			dummyNode.EnableAuthentication("")
+			t.Fatalf("Test[%d] Expected %t in eval of (err == nil)", idx, tt.rc)
+		}
+	}
+	dummyNode.EnableAuthentication("")
+}
+
+func TestClientPrependEnableSequence_UnitTest(t *testing.T) {
+	cmds := []string{
+		"show version",
+		"show arp",
+		"show interfaces",
+	}
+	dummyNode.EnableAuthentication("root")
+	got := dummyNode.prependEnableSequence(cmds)
+	if len(got) != len(cmds)+1 {
+		t.Fatalf("Missing or extra entry in prepend: %#v", got)
+	}
+	cmd := got[0].(map[string]interface{})["cmd"]
+	passwd := got[0].(map[string]interface{})["input"]
+	if cmd != "enable" || passwd != "root" {
+		dummyNode.EnableAuthentication("")
+		t.Fatalf("Invalid Entry. Cmd:%s Passwd:%s Got:%#v", cmd, passwd, got[0])
+	}
+	dummyNode.EnableAuthentication("")
+}
+
+func TestClientCmdsToInterface_UnitTest(t *testing.T) {
+	cmds := []string{
+		"show version",
+		"show arp",
+		"show interfaces",
+	}
+	got := cmdsToInterface(cmds)
+	if len(got) != len(cmds) {
+		t.Fatalf("Missing or extra entry in Conversion: %#v", got)
+	}
+	if got := cmdsToInterface(nil); got != nil {
+		t.Fatalf("Should return nil on nil being passed")
+	}
+	if got := cmdsToInterface([]string{}); got != nil {
+		t.Fatalf("Should return nil on empty list being passed")
 	}
 }
 

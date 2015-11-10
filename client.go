@@ -194,7 +194,8 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 	if config != "running-config" && config != "startup-config" {
 		return "", fmt.Errorf("Invalid config type: %s", config)
 	}
-	commands := []string{"show " + config + " " + params}
+	commands := []string{strings.TrimSpace("show " + config + " " + params)}
+	//commands := []string{"show " + config + " " + params}
 
 	result, err := n.runCommands(commands, "text")
 	if err != nil {
@@ -334,7 +335,7 @@ func (n *Node) runCommands(commands []string,
 		cmds = n.prependEnableSequence(commands)
 	} else {
 		commands = append([]string{"enable"}, commands...)
-		cmds = CmdsToInterface(commands)
+		cmds = cmdsToInterface(commands)
 	}
 
 	result, err := n.conn.Execute(cmds, encoding)
@@ -375,7 +376,7 @@ func (n *Node) prependEnableSequence(commands []string) []interface{} {
 	return interfaceSlice
 }
 
-// CmdsToInterface is a helper fuction that converts a given array
+// cmdsToInterface is a helper fuction that converts a given array
 // of strings (commands) to an array of interfaces.
 //
 // Args:
@@ -383,7 +384,7 @@ func (n *Node) prependEnableSequence(commands []string) []interface{} {
 //
 // Returns:
 //  Interface array of converted commands
-func CmdsToInterface(commands []string) []interface{} {
+func cmdsToInterface(commands []string) []interface{} {
 	if commands == nil || len(commands) == 0 {
 		return nil
 	}

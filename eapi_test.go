@@ -32,9 +32,19 @@
 package goeapi
 
 import (
+	"encoding/json"
 	"regexp"
 	"testing"
 )
+
+type ShowRunning struct {
+	Cmd    string `json:"-"`
+	Output string `json:"output"`
+}
+
+func (s *ShowRunning) GetCmd() string {
+	return "show running-config all"
+}
 
 type MyShow struct {
 	Cmd              string  `json:"-"`
@@ -165,6 +175,35 @@ func TestEapiRespHandlerAddCommand_UnitTest(t *testing.T) {
 	}
 }
 
+func TestEapiRespHandlerGetAllCommandsChecks_UnitTest(t *testing.T) {
+	showdummy := new(MyShow)
+	node := &Node{}
+	h, _ := node.GetHandle("json")
+
+	for i := 0; i < 10; i++ {
+		h.AddCommand(showdummy)
+	}
+	got := h.getAllCommands()
+	if len(got) != 10 {
+		t.Fatalf("getAllCommands() returned length %d want 10", len(got))
+	}
+	h.clearCommands()
+	got = h.getAllCommands()
+	if got != nil {
+		t.Fatalf("getAllCommands() did not return nil for cleared command list")
+	}
+	h.Close()
+	got = h.getAllCommands()
+	if got != nil {
+		t.Fatalf("getAllCommands() did not return nil for no node")
+	}
+	h = nil
+	got = h.getAllCommands()
+	if got != nil {
+		t.Fatalf("getAllCommands() did not return nil for nil handle")
+	}
+}
+
 func TestEapiRespHandlerClearCommands_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
@@ -206,7 +245,7 @@ func TestEapiRespHandlerClearCommands_UnitTest(t *testing.T) {
 	h.clearCommands()
 }
 
-func TestEapiRespHandlerClodeClearCommands_UnitTest(t *testing.T) {
+func TestEapiRespHandlerCloseClearCommands_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
 
@@ -233,7 +272,116 @@ func TestEapiRespHandlerClodeClearCommands_UnitTest(t *testing.T) {
 		if count := h.getCmdLen(); count != 0 {
 			t.Fatal("Failed to clear commands from cmd list")
 		}
+		h = nil
+		h.Close()
 	}
+}
+
+func TestEapiRespHandlerCallHandleNil_UnitTest(t *testing.T) {
+	node := &Node{}
+	h, _ := node.GetHandle("json")
+	h = nil
+	if err := h.Call(); err == nil {
+		t.Fatal("Should return error on nil handle Call()")
+	}
+}
+
+func TestEapiRespHandlerCallNodeNil_UnitTest(t *testing.T) {
+	node := &Node{}
+	h, _ := node.GetHandle("json")
+	h.Close()
+	if err := h.Call(); err == nil {
+		t.Fatal("Should return error on nil node Call()")
+	}
+}
+
+func TestEapiRespHandlerCallEnableInvalidAdd_UnitTest(t *testing.T) {
+	showdummy := new(MyShow)
+	h, _ := dummyNode.GetHandle("json")
+	for i := 0; i < 5; i++ {
+		h.AddCommandStr("", showdummy)
+	}
+	if err := h.Call(); err == nil {
+		t.Fatalf("error should be raised on invalid command string add")
+	}
+	h.Close()
+	h = nil
+}
+
+func TestEapiRespHandlerCallEnablePasswd_UnitTest(t *testing.T) {
+	showdummy := new(MyShow)
+	dummyNode.EnableAuthentication("root")
+	h, _ := dummyNode.GetHandle("json")
+	for i := 0; i < 5; i++ {
+		h.AddCommand(showdummy)
+	}
+	if err := h.Call(); err != nil {
+		t.Fatal("error on Call()")
+	}
+	dummyNode.EnableAuthentication("")
+	h.Close()
+}
+
+func TestEapiRespHandlerNilHandleClose_UnitTest(t *testing.T) {
+	node := &Node{}
+
+	h, _ := node.GetHandle("json")
+	h = nil
+	if err := h.Close(); err == nil {
+		t.Fatal("Should return error on nil handle close")
+	}
+}
+
+func TestEapiRespHandlerGetNode_UnitTest(t *testing.T) {
+	node := &Node{}
+
+	h, _ := node.GetHandle("json")
+	n, err := h.getNode()
+	if n != node {
+		t.Fatal("Should be same")
+	}
+	h.Close()
+	n, err = h.getNode()
+	if n != nil || err == nil {
+		t.Fatal("Should return nil node and error")
+	}
+}
+
+func TestEapiRespHandlerEnable_UnitTest(t *testing.T) {
+	show := new(ShowRunning)
+	dummyNode.EnableAuthentication("")
+	h, _ := dummyNode.GetHandle("text")
+	if err := h.Enable(show); err != nil {
+		t.Fatal("error on Enable()")
+	}
+	re := regexp.MustCompile(`^!\s+Command: show running-config`)
+	if found := re.MatchString(show.Output); !found {
+		t.Fatalf("Failed to obtain running-config. Output: %#v", show.Output)
+	}
+	h.Close()
+}
+
+func TestEapiRespHandlerEnableAddError_UnitTest(t *testing.T) {
+	show := new(ShowRunning)
+	h, _ := dummyNode.GetHandle("text")
+	for i := 0; i < maxCmdBuflen+1; i++ {
+		h.AddCommand(show)
+	}
+	if err := h.Enable(show); err == nil {
+		t.Fatal("Should return error on adding to full command list")
+	}
+	h.Close()
+	h = nil
+}
+
+func TestDebugJSON_UnitTest(t *testing.T) {
+	p := Parameters{1, cmdsToInterface([]string{"show version", "show interface"}), "json"}
+	req := Request{"2.0", "runCmds", p, 255}
+	data, err := json.Marshal(req)
+	if err != nil {
+		t.Fatal("Should return nil")
+	}
+	debugJSON(data)
 }
 
 func TestEapiCall_SystemTest(t *testing.T) {

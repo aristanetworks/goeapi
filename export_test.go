@@ -32,7 +32,9 @@
 package goeapi
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -54,7 +56,78 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
+/*
+ ****************************************************************************
+ *
+ * DummyEapiConnection is a Dummy connection object that adheres to the
+ * EapiConnection Inteface. The Execute() method below (currently) returns
+ * a non-error with allocated JSONRPCResponse so the upper layer API can
+ * be tested. Commands received by this DummyConnection are cached and retreived
+ * to compare to what would be sent.
+ *
+ * Note:
+ *		Execute() clears the the previous cached list of commands and replaces
+ *		with current command list.
+ *
+ ****************************************************************************
+ */
+type DummyEapiConnection struct {
+	EapiConnection
+	Commands []interface{}
+}
+
+func NewDummyEapiConnection(transport string, host string, username string,
+	password string, port int) *DummyEapiConnection {
+	conn := EapiConnection{}
+	return &DummyEapiConnection{EapiConnection: conn}
+}
+
+func (conn *DummyEapiConnection) Execute(commands []interface{},
+	encoding string) (*JSONRPCResponse, error) {
+	if conn == nil {
+		return &JSONRPCResponse{}, fmt.Errorf("No connection")
+	}
+	conn.Commands = nil
+	conn.Commands = append(conn.Commands, commands...)
+	resp := &JSONRPCResponse{
+		Result: make([]map[string]interface{}, len(commands)),
+	}
+
+	if encoding == "json" {
+		return resp, nil
+	}
+
+	for idx := range resp.Result {
+		resp.Result[idx] = make(map[string]interface{})
+		resp.Result[idx]["output"] = ""
+	}
+
+	if encoding == "text" && len(commands) >= 2 &&
+		(commands[1] == "show running-config all" ||
+			commands[1] == "show startup-config") {
+		resp.Result[1]["output"] = LoadFixtureFile("running_config.text")
+	}
+
+	return resp, nil
+}
+
+func (conn *DummyEapiConnection) decodeJSONFile(r io.Reader) *JSONRPCResponse {
+	dec := json.NewDecoder(r)
+	var v JSONRPCResponse
+	if err := dec.Decode(&v); err != nil {
+		panic(err)
+	}
+	return &v
+}
+
+// Retreive the cached list of commands from the connection.
+func (conn *DummyEapiConnection) GetCommands() []interface{} {
+	return conn.Commands
+}
+
 var runConf string
+var dummyNode *Node
+var dummyConnection *DummyEapiConnection
 var duts []*Node
 
 // Setup/Teardown
@@ -69,6 +142,13 @@ func TestMain(m *testing.M) {
 			duts = append(duts, node)
 		}
 	}
+	// Create a Node with a DummyConnection to be used in
+	// UnitTests.
+	dummyConnection = NewDummyEapiConnection("", "", "", "", 0)
+	dummyNode = &Node{}
+	dummyNode.SetAutoRefresh(false)
+	dummyNode.SetConnection(dummyConnection)
+
 	os.Exit(m.Run())
 }
 

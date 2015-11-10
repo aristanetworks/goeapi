@@ -121,15 +121,6 @@ func debugJSON(data []byte) {
 	}
 }
 
-// debug prints debug string
-func debug(data []byte, err error) {
-	if err == nil {
-		fmt.Printf("%s\n\n", data)
-	} else {
-		log.Fatalf("%s\n\n", err)
-	}
-}
-
 // checkHandle helper function to check the validity of an
 // EapiReqHandle
 func (handle *EapiReqHandle) checkHandle() error {
@@ -158,7 +149,7 @@ func AddCommandStr(handle *EapiReqHandle, command string, v EapiCommand) error {
 		return err
 	}
 	if command == "" {
-		handle.err = fmt.Errorf("Invalid Command string.")
+		handle.err = fmt.Errorf("Invalid null Command string.")
 		return handle.err
 	}
 
@@ -194,7 +185,7 @@ func (handle *EapiReqHandle) AddCommand(v EapiCommand) error {
 
 // getAllCommands iterates through the list of command blocks
 // and returns the commands as an array of interfaces.
-func (handle EapiReqHandle) getAllCommands() []interface{} {
+func (handle *EapiReqHandle) getAllCommands() []interface{} {
 	if err := handle.checkHandle(); err != nil {
 		return nil
 	}
@@ -208,18 +199,6 @@ func (handle EapiReqHandle) getAllCommands() []interface{} {
 		tmp = append(tmp, cmd.command)
 	}
 	return tmp
-}
-
-// PrintCommands prints the list of commands currently stored in
-// the EapiReqHandle command block list.
-func (handle EapiReqHandle) PrintCommands() {
-	if err := handle.checkHandle(); err != nil {
-		return
-	}
-	fmt.Printf("Command length = %d\r\n", len(handle.eapiCommands))
-	for _, cmd := range handle.eapiCommands {
-		fmt.Printf("%s\n", cmd.command)
-	}
 }
 
 // getCmdLen returns the length of the EapiReqHandle command block

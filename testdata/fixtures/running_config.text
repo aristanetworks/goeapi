@@ -1864,7 +1864,7 @@ interface Vlan10
    default ip pim bfd-instance
 !
 interface Vxlan1
-   no description
+   description Vxlan1-test
    no shutdown
    default load-interval
    logging event link-status use-global

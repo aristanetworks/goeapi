@@ -340,7 +340,6 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	//debug(httputil.DumpResponse(resp, true))
 	jsonRsp := decodeEapiResponse(resp)
 
 	// check for errors in the JSON response
@@ -446,7 +445,6 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	//debug(httputil.DumpResponse(resp, true))
 	jsonRsp := decodeEapiResponse(resp)
 
 	// check for errors in the JSON response

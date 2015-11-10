@@ -32,7 +32,9 @@
 package module
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 
@@ -152,7 +154,23 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 		resp.Result[idx] = make(map[string]interface{})
 		resp.Result[idx]["output"] = ""
 	}
+
+	if encoding == "text" && len(commands) >= 2 &&
+		(commands[1] == "show running-config all" ||
+			commands[1] == "show startup-config") {
+		resp.Result[1]["output"] = LoadFixtureFile("running_config.text")
+	}
+
 	return resp, nil
+}
+
+func (conn *DummyEapiConnection) decodeJSONFile(r io.Reader) *goeapi.JSONRPCResponse {
+	dec := json.NewDecoder(r)
+	var v goeapi.JSONRPCResponse
+	if err := dec.Decode(&v); err != nil {
+		panic(err)
+	}
+	return &v
 }
 
 // Retreive the cached list of commands from the connection.
