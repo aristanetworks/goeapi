@@ -127,19 +127,24 @@ const xMark = "\u2717"
 type DummyEapiConnection struct {
 	goeapi.EapiConnection
 	Commands []interface{}
+	retError bool
 }
 
 func NewDummyEapiConnection(transport string, host string, username string,
 	password string, port int) *DummyEapiConnection {
 	conn := goeapi.EapiConnection{}
-	return &DummyEapiConnection{EapiConnection: conn}
+	return &DummyEapiConnection{EapiConnection: conn, retError: false}
 }
 
 func (conn *DummyEapiConnection) Execute(commands []interface{},
 	encoding string) (*goeapi.JSONRPCResponse, error) {
-	if conn == nil {
-		return &goeapi.JSONRPCResponse{}, fmt.Errorf("No connection")
+	if conn.retError {
+		conn.retError = false
+		err := fmt.Errorf("Mock Error")
+		conn.SetError(err)
+		return &goeapi.JSONRPCResponse{}, err
 	}
+	conn.ClearError()
 	conn.Commands = nil
 	conn.Commands = append(conn.Commands, commands...)
 	resp := &goeapi.JSONRPCResponse{
@@ -162,6 +167,10 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 	}
 
 	return resp, nil
+}
+
+func (conn *DummyEapiConnection) setReturnError(enable bool) {
+	conn.retError = enable
 }
 
 func (conn *DummyEapiConnection) decodeJSONFile(r io.Reader) *goeapi.JSONRPCResponse {
@@ -209,7 +218,7 @@ func TestMain(m *testing.M) {
 	// UnitTests.
 	dummyConnection = NewDummyEapiConnection("", "", "", "", 0)
 	dummyNode = &goeapi.Node{}
-	dummyNode.SetAutoRefresh(false)
+	dummyNode.SetAutoRefresh(true)
 	dummyNode.SetConnection(dummyConnection)
 
 	//

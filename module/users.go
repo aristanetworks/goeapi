@@ -148,7 +148,9 @@ func (u UserConfig) isEqual(dest UserConfig) bool {
 		return false
 	}
 	for k, v := range u {
-		if dest[k] != v {
+		//if dest[k] != v {
+		val, found := dest[k]
+		if !found || val != v {
 			return false
 		}
 	}

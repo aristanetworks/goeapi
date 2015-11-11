@@ -46,7 +46,7 @@ import (
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
 	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
-	GetError() error
+	Error() error
 }
 
 // EapiConnection represents the base object for implementing an EapiConnection
@@ -108,12 +108,20 @@ func (conn *EapiConnection) getURL() string {
 	return url
 }
 
-// GetError returns the current error for Connection
-func (conn *EapiConnection) GetError() error {
+// Error returns the current error for Connection
+func (conn *EapiConnection) Error() error {
 	if conn == nil {
 		return nil
 	}
 	return conn.err
+}
+
+// SetError sets error for Connection
+func (conn *EapiConnection) SetError(e error) {
+	if conn == nil {
+		return
+	}
+	conn.err = e
 }
 
 // ClearError clears any error for Connection
@@ -202,8 +210,10 @@ func (conn *SocketEapiConnection) Execute(commands []interface{},
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
+	conn.ClearError()
 	data, err := buildJSONRequest(commands, encoding, os.Getpid())
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	return conn.send(data)
@@ -280,8 +290,10 @@ func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
+	conn.ClearError()
 	data, err := buildJSONRequest(commands, encoding, os.Getpid())
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	return conn.send(data)
@@ -336,6 +348,7 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	url := conn.getURL()
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	defer resp.Body.Close()
@@ -346,6 +359,7 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if jsonRsp.Error != nil {
 		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
 			jsonRsp.Error.Message)
+		conn.SetError(err)
 		return jsonRsp, err
 	}
 	return jsonRsp, nil
@@ -372,8 +386,10 @@ func (conn *HTTPEapiConnection) Execute(commands []interface{},
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
+	conn.ClearError()
 	data, err := buildJSONRequest(commands, encoding, os.Getpid())
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	return conn.send(data)
@@ -441,6 +457,7 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	defer resp.Body.Close()
@@ -451,6 +468,7 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if jsonRsp.Error != nil {
 		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
 			jsonRsp.Error.Message)
+		conn.SetError(err)
 		return jsonRsp, err
 	}
 	return jsonRsp, nil
@@ -477,8 +495,10 @@ func (conn *HTTPSEapiConnection) Execute(commands []interface{},
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
+	conn.ClearError()
 	data, err := buildJSONRequest(commands, encoding, os.Getpid())
 	if err != nil {
+		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
 	return conn.send(data)

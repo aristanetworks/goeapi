@@ -39,16 +39,6 @@ import (
 
 var initFile bool
 
-/*
-func initFixture() {
-	if initFile {
-		return
-	}
-	initFile = true
-	dummyNode.SetRunningConfig(LoadFixtureFile("running_config.text"))
-	return
-}*/
-
 /**
  *****************************************************************************
  * Unit Tests
@@ -138,7 +128,6 @@ func TestSystemGetKeysReturned_UnitTest(t *testing.T) {
 }
 
 func TestSystemCheckSystemConfigGetters_UnitTest(t *testing.T) {
-	initFixture()
 	sys := System(dummyNode)
 	sysConfig := sys.Get()
 
@@ -228,7 +217,6 @@ func TestSystemSetIPRoutingDefault_UnitTest(t *testing.T) {
 }
 
 func TestSystemParseHostname_UnitTest(t *testing.T) {
-	initFixture()
 	sys := System(dummyNode)
 	hostname := sys.parseHostname()
 	if hostname != "veos01" {
@@ -237,7 +225,6 @@ func TestSystemParseHostname_UnitTest(t *testing.T) {
 }
 
 func TestSystemIPRouting_UnitTest(t *testing.T) {
-	initFixture()
 	sys := System(dummyNode)
 	if ok := sys.parseIPRouting(); !ok {
 		t.Fatalf("ParseIPRouting expected \"true\"")

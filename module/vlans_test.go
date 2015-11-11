@@ -91,9 +91,12 @@ func TestVlanFunctions_UnitTest(t *testing.T) {
 	}{
 		{[]string{}, []string{"a", "b", "c"}, []string{}},
 		{[]string{"a", "b", "c"}, []string{}, []string{"a", "b", "c"}},
+		{[]string{"a", "b", "c"}, []string{""}, []string{"a", "b", "c"}},
+		{[]string{"a", "b", "c"}, nil, []string{"a", "b", "c"}},
 		{[]string{"a", "b", "c"}, []string{"a", "b", "c"}, []string{}},
 		{[]string{"a", "b", "c"}, []string{"d", "e", "f"}, []string{"a", "b", "c"}},
 		{[]string{"a", "c", "e"}, []string{"c", "d", "f"}, []string{"a", "e"}},
+		{[]string{"a", "", "c", "", "e"}, []string{"", "c", "d", "", "f"}, []string{"a", "e"}},
 	}
 
 	for _, tt := range findDiffTests {
@@ -211,8 +214,18 @@ func TestVlanParseTrunkGroup_UnitTest(t *testing.T) {
 	}
 }
 
+func TestVlanGetConnectionError_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	config := vlan.Get("10")
+	if config != nil {
+		t.Fatalf("Get() should return nil on underlying error: config: %#v", config)
+	}
+}
+
 func TestVlanGet_UnitTest(t *testing.T) {
-	initFixture()
 	vlan := Vlan(dummyNode)
 
 	config := vlan.Get("10")
@@ -223,7 +236,6 @@ func TestVlanGet_UnitTest(t *testing.T) {
 }
 
 func TestVlanGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	vlan := Vlan(dummyNode)
 
 	configs := vlan.GetAll()
@@ -233,12 +245,22 @@ func TestVlanGetAll_UnitTest(t *testing.T) {
 }
 
 func TestVlanGetSection_UnitTest(t *testing.T) {
-	initFixture()
 	vlan := Vlan(dummyNode)
 
 	section := vlan.GetSection("10")
 	if section == "" {
 		t.Fatalf("GetSection() returned nil")
+	}
+}
+
+func TestVlanGetSectionConnectionError_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	section := vlan.GetSection("10")
+	if section != "" {
+		t.Fatalf("GetSection() during connection error should return nil")
 	}
 }
 
@@ -443,7 +465,6 @@ func TestVlanSetTrunkGroupDefault_UnitTest(t *testing.T) {
 }
 
 func TestVlanSetTrunkGroupAdd_UnitTest(t *testing.T) {
-	initFixture()
 	vlan := Vlan(dummyNode)
 
 	cmds := []string{
@@ -460,8 +481,17 @@ func TestVlanSetTrunkGroupAdd_UnitTest(t *testing.T) {
 	}
 }
 
+func TestVlanSetTrunkGroupAddError_UnitTest(t *testing.T) {
+	vlan := Vlan(dummyNode)
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	if ok := vlan.SetTrunkGroup("10", []string{"tg1", "tg2"}); !ok {
+		t.Fatalf("SetTrunkGroup expected to fail during connection error test")
+	}
+}
+
 func TestVlanSetTrunkGroupDel_UnitTest(t *testing.T) {
-	initFixture()
 	vlan := Vlan(dummyNode)
 
 	cmds := []string{

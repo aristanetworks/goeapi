@@ -106,12 +106,14 @@ func (m MlagConfig) isEqual(dest MlagConfig) bool {
 		return false
 	}
 	for k, v := range m.config {
-		if dest.config[k] != v {
+		val, found := dest.config[k]
+		if !found || val != v {
 			return false
 		}
 	}
 	for k, v := range m.interfaces {
-		if dest.interfaces[k] != v {
+		val, found := dest.interfaces[k]
+		if !found || val != v {
 			return false
 		}
 	}

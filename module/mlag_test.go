@@ -245,7 +245,6 @@ no mpls routing`
 	}
 }
 func TestMlagIsEqual_UnitTest(t *testing.T) {
-	initFixture()
 	mlag := Mlag(dummyNode)
 	config := mlag.Get()
 	configTemp := MlagConfig{
@@ -263,10 +262,73 @@ func TestMlagIsEqual_UnitTest(t *testing.T) {
 	if config.isEqual(configTemp) == false {
 		t.Fatalf("Unequal configs seen")
 	}
+
+	configTemp = MlagConfig{
+		config: GlobalMlagConfig{
+			"domain_id":       "",
+			"local_interface": "",
+			"peer_address":    "",
+			"peer_link":       "",
+			"shutdown":        "false",
+		},
+		interfaces: InterfaceMlagConfig{
+			"Port-Channel10": "20",
+		},
+	}
+	if config.isEqual(configTemp) != false {
+		t.Fatalf("Unequal configs. Should return false")
+	}
+
+	configTemp = MlagConfig{
+		config: GlobalMlagConfig{
+			"domain_id":    "",
+			"peer_address": "",
+			"peer_link":    "",
+			"shutdown":     "false",
+		},
+		interfaces: InterfaceMlagConfig{
+			"Port-Channel10": "10",
+		},
+	}
+	if config.isEqual(configTemp) != false {
+		t.Fatalf("Unequal configs. Should return false")
+	}
+
+	configTemp = MlagConfig{
+		config: GlobalMlagConfig{
+			"domain_id":       "",
+			"local_interface": "",
+			"peer_address":    "",
+			"peer_link":       "",
+			"shutdown":        "false",
+		},
+		interfaces: InterfaceMlagConfig{
+			"Port-Channel10": "10",
+			"Port-Channel11": "11",
+		},
+	}
+	if config.isEqual(configTemp) != false {
+		t.Fatalf("Unequal configs. Should return false")
+	}
+
+	configTemp = MlagConfig{
+		config: GlobalMlagConfig{
+			"domain_id":       "Bogus",
+			"local_interface": "",
+			"peer_address":    "",
+			"peer_link":       "",
+			"shutdown":        "false",
+		},
+		interfaces: InterfaceMlagConfig{
+			"Port-Channel10": "10",
+		},
+	}
+	if config.isEqual(configTemp) != false {
+		t.Fatalf("Unequal configs. Should return false")
+	}
 }
 
 func TestMlagGet_UnitTest(t *testing.T) {
-	initFixture()
 	mlag := Mlag(dummyNode)
 	config := mlag.Get()
 	if config.DomainID() != "" || config.LocalInterface() != "" ||
@@ -276,8 +338,17 @@ func TestMlagGet_UnitTest(t *testing.T) {
 	}
 }
 
+func TestMlagGetSectionConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	mlag := Mlag(dummyNode)
+	if config := mlag.GetSection(); config != "" {
+		t.Fatalf("GetSection() should return nil on error")
+	}
+}
+
 func TestMlagGetSection_UnitTest(t *testing.T) {
-	initFixture()
 	mlag := Mlag(dummyNode)
 	if config := mlag.GetSection(); config == "" {
 		t.Fatalf("GetSection() returned nil")

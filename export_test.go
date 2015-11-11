@@ -74,19 +74,24 @@ func init() {
 type DummyEapiConnection struct {
 	EapiConnection
 	Commands []interface{}
+	retError bool
 }
 
 func NewDummyEapiConnection(transport string, host string, username string,
 	password string, port int) *DummyEapiConnection {
 	conn := EapiConnection{}
-	return &DummyEapiConnection{EapiConnection: conn}
+	return &DummyEapiConnection{EapiConnection: conn, retError: false}
 }
 
 func (conn *DummyEapiConnection) Execute(commands []interface{},
 	encoding string) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
+	if conn.retError {
+		conn.retError = false
+		err := fmt.Errorf("Mock Error")
+		conn.SetError(err)
+		return &JSONRPCResponse{}, err
 	}
+	conn.ClearError()
 	conn.Commands = nil
 	conn.Commands = append(conn.Commands, commands...)
 	resp := &JSONRPCResponse{
@@ -109,6 +114,10 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 	}
 
 	return resp, nil
+}
+
+func (conn *DummyEapiConnection) setReturnError(enable bool) {
+	conn.retError = enable
 }
 
 func (conn *DummyEapiConnection) decodeJSONFile(r io.Reader) *JSONRPCResponse {

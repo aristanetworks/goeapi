@@ -257,7 +257,6 @@ interface Port-Channel10
 }
 
 func TestSwitchPortGetKeysReturned_UnitTest(t *testing.T) {
-	initFixture()
 	keys := []string{
 		"name", "mode", "access_vlan",
 		"trunk_native_vlan", "trunk_allowed_vlans",
@@ -279,7 +278,6 @@ func TestSwitchPortGetKeysReturned_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGet_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	spConfig := sp.Get("Port-Channel10")
 	if spConfig == nil {
@@ -293,7 +291,6 @@ func TestSwitchPortGet_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGetInterfaceNoSwitchport_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	if spConfig := sp.Get("Ethernet9"); spConfig != nil {
 		t.Fatalf("Get(Ethernet9) should return nil but got %#v", spConfig)
@@ -301,7 +298,6 @@ func TestSwitchPortGetInterfaceNoSwitchport_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGetInvalidInterface_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	if spConfig := sp.Get("TokenRing8"); spConfig != nil {
 		t.Fatalf("Get(TokenRing8) should return nil but got %#v", spConfig)
@@ -309,7 +305,6 @@ func TestSwitchPortGetInvalidInterface_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	spConfig := sp.GetAll()
 	if spConfig == nil {
@@ -318,7 +313,6 @@ func TestSwitchPortGetAll_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGetSection_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	if section := sp.GetSection("Port-Channel10"); section == "" {
 		t.Fatalf("GetSection(Port-Channel10) returned nil")
@@ -326,7 +320,6 @@ func TestSwitchPortGetSection_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortGetSectionInvalid_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 	if section := sp.GetSection("TokenRing8"); section != "" {
 		t.Fatalf("GetSection(TokenRing8) should return nil but got %#v", section)
@@ -565,7 +558,6 @@ func TestSwitchPortSetTrunkAllowedVlansDefault_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortSetTrunkGroupsAdd_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 
 	cmds := []string{
@@ -584,7 +576,6 @@ func TestSwitchPortSetTrunkGroupsAdd_UnitTest(t *testing.T) {
 }
 
 func TestSwitchPortSetTrunkGroupsRemove_UnitTest(t *testing.T) {
-	initFixture()
 	sp := SwitchPort(dummyNode)
 
 	cmds := []string{

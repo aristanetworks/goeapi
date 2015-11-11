@@ -70,10 +70,12 @@ router bgp %s
 	tests := [10]struct {
 		in   string
 		want string
-	}{}
+	}{
+		{"", ""},
+	}
 
 	// for each test entry
-	for idx := range tests {
+	for idx := 1; idx < len(tests); idx++ {
 		// get the random strings
 		asNum := strconv.Itoa(RandomInt(1, 65535))
 		tests[idx].in = asNum
@@ -114,10 +116,12 @@ router bgp 6500
 	tests := [10]struct {
 		in   string
 		want string
-	}{}
+	}{
+		{"", ""},
+	}
 
 	// for each test entry
-	for idx := range tests {
+	for idx := 1; idx < len(tests); idx++ {
 		// get the random ip's
 		ipAddr := RandomIPAddress()
 		tests[idx].in = ipAddr
@@ -256,10 +260,31 @@ router bgp 6400
 			}
 		}
 	}
+	shortConfig = `
+!
+ip routing
+!
+router bgp 6400
+   router-id 1.1.1.1
+   neighbor test peer-group
+   neighbor test remote-as 65001
+   neighbor test maximum-routes 12000
+   neighbor test1 peer-group
+   neighbor test1 route-map RM-IN in
+   neighbor test1 route-map RM-OUT out
+   neighbor test1 maximum-routes 12000
+   neighbor 172.16.10.1 remote-as 65000
+   neighbor 172.16.10.1 maximum-routes 12000
+   neighbor 172.16.10.1 peer-group test
+!
+`
+	if got = BgpParseNetworks(&b, shortConfig); got != nil {
+		t.Fatalf("parseNetworks(). No network statements should return \"\"")
+	}
+
 }
 
 func TestBgpGet_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 	config := bgp.Get()
 	if config.BgpAs() != "65000" || config.RouterID() != "1.1.1.1" ||
@@ -270,7 +295,6 @@ func TestBgpGet_UnitTest(t *testing.T) {
 }
 
 func TestBgpNetworkGetters_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 	config := bgp.Get()
 	networks := config.Networks()
@@ -281,7 +305,6 @@ func TestBgpNetworkGetters_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsInstance_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 	n := bgp.Neighbors()
 	if n == nil {
@@ -289,8 +312,18 @@ func TestBgpNeigborsInstance_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpGetSectionConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	bgp := Bgp(dummyNode)
+	section := bgp.GetSection()
+	if section != "" {
+		t.Fatalf("GetSection() should return \"\" on error")
+	}
+}
+
 func TestBgpGetSection_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 	section := bgp.GetSection()
 	if section == "" {
@@ -299,7 +332,6 @@ func TestBgpGetSection_UnitTest(t *testing.T) {
 }
 
 func TestBgpCreate_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -333,8 +365,17 @@ func TestBgpCreate_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpDeleteConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	bgp := Bgp(dummyNode)
+
+	if ok := bgp.Delete(); !ok {
+		t.Fatalf("Delete during failed Get() returns failure")
+	}
+}
+
 func TestBgpDelete_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -350,8 +391,17 @@ func TestBgpDelete_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpDefaultConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	bgp := Bgp(dummyNode)
+
+	if ok := bgp.Default(); !ok {
+		t.Fatalf("Default during failed Get() returns failure")
+	}
+}
+
 func TestBgpDefault_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -367,8 +417,16 @@ func TestBgpDefault_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpSetRouterIDConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	bgp := Bgp(dummyNode)
+	if ok := bgp.SetRouterID("1.1.1.1"); ok {
+		t.Fatalf("SetRouterID should return false during connection error")
+	}
+}
+
 func TestBgpSetRouterID_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -397,7 +455,6 @@ func TestBgpSetRouterID_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetRouterIDDefault_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 	cmds := []string{
 		"router bgp 65000",
@@ -414,7 +471,6 @@ func TestBgpSetRouterIDDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetMaximumPaths_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -432,7 +488,6 @@ func TestBgpSetMaximumPaths_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetMaximumPathsWithEcmp_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -451,7 +506,6 @@ func TestBgpSetMaximumPathsWithEcmp_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetMaximumPathsDefault_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -469,7 +523,6 @@ func TestBgpSetMaximumPathsDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetShutdown_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -498,7 +551,6 @@ func TestBgpSetShutdown_UnitTest(t *testing.T) {
 }
 
 func TestBgpSetShutdownDefault_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -516,7 +568,6 @@ func TestBgpSetShutdownDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpAddNetworkWithRouteMap_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -534,7 +585,6 @@ func TestBgpAddNetworkWithRouteMap_UnitTest(t *testing.T) {
 }
 
 func TestBgpAddNetwork_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -552,7 +602,6 @@ func TestBgpAddNetwork_UnitTest(t *testing.T) {
 }
 
 func TestBgpRemoveNetworkWithRouteMap_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -570,7 +619,6 @@ func TestBgpRemoveNetworkWithRouteMap_UnitTest(t *testing.T) {
 }
 
 func TestBgpRemoveNetwork_UnitTest(t *testing.T) {
-	initFixture()
 	bgp := Bgp(dummyNode)
 
 	cmds := []string{
@@ -588,7 +636,6 @@ func TestBgpRemoveNetwork_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsGet_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	neighbor := n.Get("test")
 
@@ -612,17 +659,35 @@ func TestBgpNeigborsGet_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpNeigborsGetAllConnectionFailure_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	n := Bgp(dummyNode).Neighbors()
+	neighbors := n.GetAll()
+	if neighbors != nil {
+		t.Fatalf("Expected nil on GetAll with Connection error")
+	}
+	if err := n.Error(); err == nil {
+		t.Fatalf("Expected Connection error")
+	}
+	neighbors = n.GetAll()
+	if neighbors == nil {
+		t.Fatalf("Expected non-nil on GetAll. Connection error should be cleared")
+	}
+	if err := n.Error(); err != nil {
+		t.Fatalf("Connection error not cleared")
+	}
+}
+
 func TestBgpNeigborsGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	neighbors := n.GetAll()
 	if neighbors == nil {
-
+		t.Fatalf("GetAll on neighbors returned nil")
 	}
 }
 
 func TestBgpNeigborsCreate_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -638,8 +703,17 @@ func TestBgpNeigborsCreate_UnitTest(t *testing.T) {
 	}
 }
 
+func TestBgpNeigborsDeleteConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	n := Bgp(dummyNode).Neighbors()
+	if ok := n.Delete("test"); !ok {
+		t.Fatalf("Expected")
+	}
+}
+
 func TestBgpNeigborsDelete_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -656,7 +730,6 @@ func TestBgpNeigborsDelete_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetPeerGroup_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -692,7 +765,6 @@ func TestBgpNeigborsSetPeerGroup_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetPeerGroupDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -706,10 +778,12 @@ func TestBgpNeigborsSetPeerGroupDefault_UnitTest(t *testing.T) {
 			t.Fatalf("Expected \"%q\" got \"%q\"", cmds, commands)
 		}
 	}
+	if ok := n.SetPeerGroupDefault(""); ok {
+		t.Fatalf("Invalid Ip should fail")
+	}
 }
 
 func TestBgpNeigborsSetRemoteAS_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -743,7 +817,6 @@ func TestBgpNeigborsSetRemoteAS_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetRemoteASDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -760,7 +833,6 @@ func TestBgpNeigborsSetRemoteASDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetShutdown_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -790,7 +862,6 @@ func TestBgpNeigborsSetShutdown_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetShutdownDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -807,7 +878,6 @@ func TestBgpNeigborsSetShutdownDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetSendCommunity_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -837,7 +907,6 @@ func TestBgpNeigborsSetSendCommunity_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetSendCommunityDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -854,7 +923,6 @@ func TestBgpNeigborsSetSendCommunityDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetNextHopSelf_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -884,7 +952,6 @@ func TestBgpNeigborsSetNextHopSelf_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetNextHopSelfDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -901,7 +968,6 @@ func TestBgpNeigborsSetNextHopSelfDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetRouteMapIn_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -930,7 +996,6 @@ func TestBgpNeigborsSetRouteMapIn_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetRouteMapInDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -947,7 +1012,6 @@ func TestBgpNeigborsSetRouteMapInDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetRouteMapOut_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -975,7 +1039,6 @@ func TestBgpNeigborsSetRouteMapOut_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetRouteMapOutDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -992,7 +1055,6 @@ func TestBgpNeigborsSetRouteMapOutDefault_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetDescription_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",
@@ -1020,7 +1082,6 @@ func TestBgpNeigborsSetDescription_UnitTest(t *testing.T) {
 }
 
 func TestBgpNeigborsSetDescriptionDefault_UnitTest(t *testing.T) {
-	initFixture()
 	n := Bgp(dummyNode).Neighbors()
 	cmds := []string{
 		"router bgp 65000",

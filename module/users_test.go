@@ -117,6 +117,17 @@ func TestUsersIsEqual_UnitTest(t *testing.T) {
 				"sshkey":    "",
 			}, false,
 		},
+		{
+			UserConfig{
+				"username":   "test",
+				"privilege":  "1",
+				"role":       "BOGUS",
+				"nopassword": "true",
+				"format":     "5",
+				"secret":     "$1$eCurfHLe$JCbuUNM7Xwy6i6/zknYha.",
+				"sshkey":     "",
+			}, false,
+		},
 	}
 
 	conf := UserConfig{
@@ -226,8 +237,26 @@ func TestUsersParseUsername_UnitTest(t *testing.T) {
 	}
 }
 
+func TestUsersParseUsernameNil_UnitTest(t *testing.T) {
+	got := parseUsername("")
+	if got != nil {
+		t.Fatalf("parseUsername(\"\") should return nil")
+	}
+}
+
+func TestUsersGetConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	dummyNode.Refresh()
+
+	user := User(dummyNode)
+	config := user.Get("test")
+	if config != nil {
+		t.Fatalf("Get() should return nil on error. Config: %#v", config)
+	}
+}
+
 func TestUsersGet_UnitTest(t *testing.T) {
-	initFixture()
 	user := User(dummyNode)
 	config := user.Get("test")
 	if config == nil {
@@ -242,7 +271,6 @@ func TestUsersGet_UnitTest(t *testing.T) {
 }
 
 func TestUsersGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	user := User(dummyNode)
 	config := user.GetAll()
 	if config == nil {
@@ -254,7 +282,6 @@ func TestUsersGetAll_UnitTest(t *testing.T) {
 }
 
 func TestUsersGetSectionNil_UnitTest(t *testing.T) {
-	initFixture()
 	user := User(dummyNode)
 	if section := user.GetSection(); section == "" {
 		t.Fatalf("No section returned from GetSection()")

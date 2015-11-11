@@ -66,6 +66,14 @@ func TestConfigExpandPath_UnitTest(t *testing.T) {
 }
 
 func TestConfigNilEapiConfig_UnitTest(t *testing.T) {
+	config := NewEapiConfig()
+	config = nil
+	if ret := config.Connections(); ret != nil {
+		t.Fatalf("got %#v expected nil", config)
+	}
+}
+
+func TestConfigEapiConfigNilFile_UnitTest(t *testing.T) {
 	currEnv := os.Getenv("EAPI_CONF")
 	os.Setenv("EAPI_CONF", GetFixture("dontexist.conf"))
 	config := NewEapiConfig()
@@ -198,7 +206,7 @@ func TestConfigLoadRest_UnitTest(t *testing.T) {
 }
 
 func TestClientRunningConfig_UnitTest(t *testing.T) {
-	dummyNode.refresh()
+	dummyNode.Refresh()
 	if config := dummyNode.RunningConfig(); config == "" {
 		t.Fatalf("No config returned")
 	}
@@ -207,7 +215,7 @@ func TestClientRunningConfig_UnitTest(t *testing.T) {
 	}
 }
 func TestClientStartupConfig_UnitTest(t *testing.T) {
-	dummyNode.refresh()
+	dummyNode.Refresh()
 	if config := dummyNode.StartupConfig(); config == "" {
 		t.Fatalf("No config returned")
 	}
@@ -234,6 +242,15 @@ func TestClientGetConfig_UnitTest(t *testing.T) {
 	}
 }
 
+func TestClientGetConfigConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	ret, err := dummyNode.GetConfig("running-config", "")
+	if ret != "" && err == nil {
+		t.Fatalf("Connection error didn't raise issue")
+	}
+}
+
 func TestClientGetSection_UnitTest(t *testing.T) {
 	tests := [...]struct {
 		reg    string
@@ -252,6 +269,15 @@ func TestClientGetSection_UnitTest(t *testing.T) {
 		if (err == nil) != tt.rc {
 			t.Fatalf("Test[%d] Expected %t in eval of (err == nil): err:%#v", idx, tt.rc, err)
 		}
+	}
+}
+
+func TestClientGetSectionConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	ret, err := dummyNode.GetSection(`(?m)^interface Ethernet1$`, "startup-config")
+	if ret != "" && err == nil {
+		t.Fatalf("Connection error didn't raise issue")
 	}
 }
 
@@ -293,6 +319,16 @@ func TestClientEnable_UnitTest(t *testing.T) {
 	dummyNode.EnableAuthentication("")
 }
 
+func TestClientEnableConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+	cmds := []string{"show running-config"}
+	ret, err := dummyNode.Enable(cmds)
+	if ret != nil && err == nil {
+		t.Fatalf("Connection error didn't raise issue")
+	}
+}
+
 func TestClientPrependEnableSequence_UnitTest(t *testing.T) {
 	cmds := []string{
 		"show version",
@@ -302,6 +338,7 @@ func TestClientPrependEnableSequence_UnitTest(t *testing.T) {
 	dummyNode.EnableAuthentication("root")
 	got := dummyNode.prependEnableSequence(cmds)
 	if len(got) != len(cmds)+1 {
+		dummyNode.EnableAuthentication("")
 		t.Fatalf("Missing or extra entry in prepend: %#v", got)
 	}
 	cmd := got[0].(map[string]interface{})["cmd"]
@@ -309,6 +346,20 @@ func TestClientPrependEnableSequence_UnitTest(t *testing.T) {
 	if cmd != "enable" || passwd != "root" {
 		dummyNode.EnableAuthentication("")
 		t.Fatalf("Invalid Entry. Cmd:%s Passwd:%s Got:%#v", cmd, passwd, got[0])
+	}
+	dummyNode.EnableAuthentication("")
+}
+
+func TestClientPrependEnableSequenceInvalidParams_UnitTest(t *testing.T) {
+	cmds := []string{
+		"show version",
+		"show arp",
+		"show interfaces",
+	}
+	got := dummyNode.prependEnableSequence(cmds)
+	if len(got) != len(cmds)+1 {
+		dummyNode.EnableAuthentication("")
+		t.Fatalf("Missing or extra entry in prepend: %#v", got)
 	}
 	dummyNode.EnableAuthentication("")
 }
@@ -436,7 +487,7 @@ func TestClientNodeAutoRefresh_UnitTest(t *testing.T) {
 func TestClientNodeGetRunningConfig_SystemTest(t *testing.T) {
 	re := regexp.MustCompile(`^!\s+Command: show running-config`)
 	for _, dut := range duts {
-		dut.refresh()
+		dut.Refresh()
 		config := dut.RunningConfig()
 		if found := re.MatchString(config); !found {
 			t.Fatal("Failed to obtain running-config")
@@ -452,7 +503,7 @@ func TestClientNodeGetRunningConfig_SystemTest(t *testing.T) {
 func TestClientNodeGetStartupConfig_SystemTest(t *testing.T) {
 	re := regexp.MustCompile(`^!\s+Command: show startup-config`)
 	for _, dut := range duts {
-		dut.refresh()
+		dut.Refresh()
 		config := dut.StartupConfig()
 		if found := re.MatchString(config); !found {
 			t.Fatal("Failed to obtain startup-config")

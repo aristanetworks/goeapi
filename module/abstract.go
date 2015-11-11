@@ -67,7 +67,7 @@ func (b *AbstractBaseEntity) Config() string {
 // Returns:
 //      Error: current error
 func (b *AbstractBaseEntity) Error() error {
-	return b.node.GetConnection().GetError()
+	return b.node.GetConnection().Error()
 }
 
 // GetBlock scans the config and returns a block of code

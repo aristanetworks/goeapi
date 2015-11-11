@@ -128,7 +128,10 @@ func Bgp(node *goeapi.Node) *BGPEntity {
 // Get the BGP Config for the current entity.
 // Returns a BgpConfig object
 func (b *BGPEntity) Get() *BgpConfig {
-	config, _ := b.GetBlock(`^router bgp .*`)
+	config, err := b.GetBlock(`^router bgp .*`)
+	if err != nil {
+		return nil
+	}
 	var bgp = new(BgpConfig)
 	bgp.asNumber = b.parseAS(config)
 	bgp.routerID = b.parseRouterID(config)

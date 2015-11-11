@@ -134,13 +134,13 @@ func (n *Node) StartupConfig() string {
 	return n.startupConfig
 }
 
-// refresh refreshes the config properties.
+// Refresh refreshes the config properties.
 //
 // This method will refresh the runningConfig and startupConfig
 // properites.  Since the properties are lazily loaded, this method will
 // clear the current internal instance variables.  On the next call the
 // instance variables will be repopulated with the current config
-func (n *Node) refresh() {
+func (n *Node) Refresh() {
 	n.runningConfig = ""
 	n.runningConfig = ""
 }
@@ -156,7 +156,6 @@ func (n *Node) refresh() {
 func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
 	if strings.ToLower(encoding) != "json" &&
 		strings.ToLower(encoding) != "text" {
-		//return &EapiReqHandle{node: &Node{}},
 		return nil, fmt.Errorf("Invalid encoding specified: %s", encoding)
 	}
 	if n == nil {
@@ -195,7 +194,6 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 		return "", fmt.Errorf("Invalid config type: %s", config)
 	}
 	commands := []string{strings.TrimSpace("show " + config + " " + params)}
-	//commands := []string{"show " + config + " " + params}
 
 	result, err := n.runCommands(commands, "text")
 	if err != nil {
@@ -216,11 +214,9 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 //  Error returned on failure.
 func (n *Node) GetSection(regex string, config string) (string, error) {
 	var params string
-	var fetchCached bool
 	if config == "" || config == "running-config" {
 		config = "running-config"
 		params = "all"
-		fetchCached = true
 	}
 	if config != "running-config" && config != "startup-config" {
 		return "", fmt.Errorf("Invalid config type: %s", config)
@@ -229,11 +225,7 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Invalid regexp.")
 	}
-	if fetchCached {
-		config = n.RunningConfig()
-	} else {
-		config, err = n.GetConfig(config, params)
-	}
+	config, err = n.GetConfig(config, params)
 	if err != nil || config == "" {
 		return "", err
 	}
@@ -267,7 +259,7 @@ func (n *Node) Config(commands ...string) bool {
 	commands = append([]string{"configure terminal"}, commands...)
 	_, err := n.runCommands(commands, "json")
 	if n.autoRefresh {
-		n.refresh()
+		n.Refresh()
 	}
 	return (err == nil)
 }
@@ -355,12 +347,8 @@ func (n *Node) runCommands(commands []string,
 //  commands (string array): list of commands to convert
 //
 // Returns:
-//  An array of []interface{} if successful. If no commands are
-// given or Node.enablePasswd is not set, then nil is returned.
+//  An array of []interface{} if successful.
 func (n *Node) prependEnableSequence(commands []string) []interface{} {
-	if commands == nil || len(commands) == 0 || n.enablePasswd == "" {
-		return nil
-	}
 	length := len(commands) + 1
 
 	var interfaceSlice []interface{}
@@ -524,13 +512,6 @@ func (e *EapiConfig) Read(filename string) error {
 	}
 	e.addDefaultConnection()
 	return nil
-}
-
-// printConnections prints the current connections
-func (e *EapiConfig) printConnections() {
-	for name, section := range e.File {
-		fmt.Printf("Section name: %s Section:%#v\n", name, section)
-	}
 }
 
 // Load loads the file specified by filename

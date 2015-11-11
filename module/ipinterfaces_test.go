@@ -126,7 +126,6 @@ func TestIpInterfaceParseMtu_UnitTest(t *testing.T) {
 }
 
 func TestIpInterfaceGet_UnitTest(t *testing.T) {
-	initFixture()
 	ip := IPInterface(dummyNode)
 
 	intf, _ := ip.Get("Loopback0")
@@ -140,7 +139,6 @@ func TestIpInterfaceGet_UnitTest(t *testing.T) {
 }
 
 func TestIpInterfaceGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	ip := IPInterface(dummyNode)
 
 	intfMap := ip.GetAll()
@@ -150,7 +148,6 @@ func TestIpInterfaceGetAll_UnitTest(t *testing.T) {
 }
 
 func TestIpInterfaceGetEthInterfaces_UnitTest(t *testing.T) {
-	initFixture()
 	ip := IPInterface(dummyNode)
 
 	interfaces := []string{

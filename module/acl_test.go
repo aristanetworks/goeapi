@@ -148,10 +148,28 @@ func TestAclParseEntries_UnitTest(t *testing.T) {
 			}
 		}
 	}
+
+	config = `
+    ip access-list standard test
+        no statistics per-entry
+        fragment-rules
+        30
+		`
+	AclParseEntries(&a, config)
+}
+
+func TestAclGetConnectionError_UnitTest(t *testing.T) {
+	conn := dummyNode.GetConnection().(*DummyEapiConnection)
+	conn.setReturnError(true)
+
+	acl := Acl(dummyNode)
+	_, err := acl.Get("test")
+	if err == nil {
+		t.Fatalf("Expecting nil value from acl.Get()")
+	}
 }
 
 func TestAclGet_UnitTest(t *testing.T) {
-	initFixture()
 	acl := Acl(dummyNode)
 	ret, err := acl.Get("test")
 	if err != nil {
@@ -166,7 +184,6 @@ func TestAclGet_UnitTest(t *testing.T) {
 }
 
 func TestAclGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	acl := Acl(dummyNode)
 	ret := acl.GetAll()
 	if _, found := ret["test"]; !found {
@@ -175,7 +192,6 @@ func TestAclGetAll_UnitTest(t *testing.T) {
 }
 
 func TestAclGetSection_UnitTest(t *testing.T) {
-	initFixture()
 	acl := Acl(dummyNode)
 	if section := acl.GetSection("test"); section == "" {
 		t.Fatalf("Expected data got \"\"")

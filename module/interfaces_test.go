@@ -121,7 +121,6 @@ interface Ethernet1
 }
 
 func TestResourceInterfaceGet_UnitTest(t *testing.T) {
-	initFixture()
 	i := Interface(dummyNode)
 
 	keys := []string{
@@ -386,7 +385,6 @@ interface Ethernet1
 }
 
 func TestEthernetInterfaceGetCheckKeys_UnitTest(t *testing.T) {
-	initFixture()
 	i := EthernetInterface(dummyNode)
 
 	keys := []string{
@@ -610,7 +608,6 @@ interface Port-Channel5
 }
 
 func TestPortChannelGetCheckKeys_UnitTest(t *testing.T) {
-	initFixture()
 	p := PortChannel(dummyNode)
 
 	keys := []string{
@@ -1128,7 +1125,6 @@ interface Vxlan1
 }
 
 func TestVxlanInterfaceGet_UnitTest(t *testing.T) {
-	//initFixture()
 	v := Vxlan(dummyNode)
 
 	keys := []string{
@@ -1148,7 +1144,6 @@ func TestVxlanInterfaceGet_UnitTest(t *testing.T) {
 		if _, found := config[key]; !found {
 			t.Fatalf("Get(Vxlan1) key mismatch expect: %q got %#v", keys, config)
 		}
-		fmt.Printf("key: %s config:%s\n", key, config[key])
 	}
 }
 

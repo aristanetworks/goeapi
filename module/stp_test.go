@@ -248,7 +248,6 @@ func TestSTPIntfGetKeysReturned_UnitTest(t *testing.T) {
 }
 
 func TestSTPIntfGetAll_UnitTest(t *testing.T) {
-	initFixture()
 	stp := STPInterfaces(dummyNode)
 	if config := stp.GetAll(); config == nil {
 		t.Fatalf("GetAll() returned nil")
