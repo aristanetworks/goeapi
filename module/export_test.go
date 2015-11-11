@@ -187,15 +187,6 @@ func (conn *DummyEapiConnection) GetCommands() []interface{} {
 	return conn.Commands
 }
 
-func initFixture() {
-	if initFile {
-		return
-	}
-	initFile = true
-	dummyNode.SetRunningConfig(LoadFixtureFile("running_config.text"))
-	return
-}
-
 var runConf string
 var duts []*goeapi.Node
 var dummyNode *goeapi.Node
