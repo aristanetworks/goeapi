@@ -2035,6 +2035,7 @@ router bgp 65000
    neighbor test1 route-map RM-IN in
    neighbor test1 route-map RM-OUT out
    neighbor test1 maximum-routes 12000
+   neighbor 172.16.10.1 description Description for this neighbor
    neighbor 172.16.10.1 remote-as 65000
    neighbor 172.16.10.1 maximum-routes 12000
    neighbor 172.16.10.1 peer-group test
