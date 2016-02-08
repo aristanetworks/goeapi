@@ -453,7 +453,7 @@ func (e *EapiConfig) AutoLoad() {
 	}
 
 	for _, file := range searchPath {
-		file = expandPath(file)
+		file, _ = expandPath(file)
 
 		if _, err := os.Stat(file); err == nil {
 			e.filename = file
@@ -713,19 +713,33 @@ func Connect(transport string, host string, username string, passwd string,
 //  path (string): path
 //
 // Returns:
-//  String with newly expanded path
-func expandPath(path string) string {
-	if path == "" {
-		return path
+//  String with newly expanded path or "" with error
+func expandPath(path string) (string, error) {
+	var homeDir string
+
+	if len(path) == 0 {
+		return path, nil
 	}
 
-	usr, _ := user.Current()
-	if path[:1] == "~" {
-		if len(path) < 2 {
-			return usr.HomeDir
-		}
-		newPath := filepath.Join(usr.HomeDir, path[1:])
-		return newPath
+	if path[0] != '~' {
+		return path, nil
 	}
-	return path
+
+	// Get current User home dir
+	if usr, err := user.Current(); err == nil {
+		homeDir = usr.HomeDir
+	} else {
+		// user.Current() requires cgo and currently this is disabled
+		// during cross-compiling. If an error is returned, then attempt
+		// to get the home dir from the environment.
+		homeDir = os.Getenv("HOME")
+	}
+	// return nothing if no homeDir found.
+	if homeDir == "" {
+		return "", fmt.Errorf("No home dir found")
+	}
+	if len(path) < 2 {
+		return homeDir, nil
+	}
+	return filepath.Join(homeDir, path[1:]), nil
 }

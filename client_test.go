@@ -58,7 +58,7 @@ func TestConfigExpandPath_UnitTest(t *testing.T) {
 		{"~", homedir},
 	}
 	for _, tt := range tests {
-		got := expandPath(tt.in)
+		got, _ := expandPath(tt.in)
 		if got != tt.want {
 			t.Fatalf("expandPath() got %q;  want %q", got, tt.want)
 		}
