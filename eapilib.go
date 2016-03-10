@@ -40,12 +40,14 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
 	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	SetTimeout(to uint32)
 	Error() error
 }
 
@@ -60,6 +62,7 @@ type EapiConnection struct {
 	port        int
 	path        string
 	auth        string
+	timeOut     uint32
 }
 
 // Execute the list of commands on the destination node. In the case of
@@ -132,6 +135,21 @@ func (conn *EapiConnection) ClearError() {
 	conn.err = nil
 }
 
+// SetTimeout sets timeout value for Connection
+func (conn *EapiConnection) SetTimeout(timeOut uint32) {
+	var val uint32
+	if conn == nil {
+		return
+	}
+
+	if timeOut > 65535 {
+		val = 60
+	} else {
+		val = timeOut
+	}
+	conn.timeOut = val
+}
+
 // buildJSONRequest builds a JSON request given a list of commands, encoding
 // type of either json or text, and request id. The command list input is made
 // up of a list of interface{} types. This is so associative entries and list
@@ -171,7 +189,7 @@ const defaultUnixSocket = "/var/run/command-api.sock"
 //  Newly created SocketEapiConnection
 func NewSocketEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	return &SocketEapiConnection{conn}
 }
 
@@ -246,7 +264,7 @@ const DefaultHTTPLocalPort = 8080
 //  Newly created SocketEapiConnection
 func NewHTTPLocalEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	return &HTTPLocalEapiConnection{conn}
 }
 
@@ -322,7 +340,7 @@ const defaultHTTPPort = 80
 func NewHTTPEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
 	port = defaultHTTPPort
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	conn.Authentication(username, password)
 	return &HTTPEapiConnection{conn}
 }
@@ -344,7 +362,10 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
 
-	client := &http.Client{}
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
+	client := &http.Client{
+		Timeout: timeOut,
+	}
 	url := conn.getURL()
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
@@ -426,7 +447,7 @@ func NewHTTPSEapiConnection(transport string, host string, username string,
 	port = DefaultHTTPSPort
 	path := DefaultHTTPSPath
 
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 
 	conn.Authentication(username, password)
 	return &HTTPSEapiConnection{path: path, EapiConnection: conn}
@@ -448,12 +469,15 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
-	client := &http.Client{}
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
 	url := conn.getURL()
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client = &http.Client{Transport: tr}
+	client := &http.Client{
+		Timeout:   timeOut,
+		Transport: tr,
+	}
 
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
