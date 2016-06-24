@@ -37,6 +37,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -54,15 +55,14 @@ type EapiConnectionEntity interface {
 // EapiConnection represents the base object for implementing an EapiConnection
 // type. This clase should not be instantiated directly
 type EapiConnection struct {
-	transport   string
-	err         error
-	socketError error
-	url         string
-	host        string
-	port        int
-	path        string
-	auth        string
-	timeOut     uint32
+	transport string
+	err       error
+	url       string
+	host      string
+	port      int
+	path      string
+	auth      string
+	timeOut   uint32
 }
 
 // Execute the list of commands on the destination node. In the case of
@@ -204,7 +204,49 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
-	return &JSONRPCResponse{}, fmt.Errorf("Not Currently Implemented")
+
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
+
+	// We create our fake URL. Post() will be checking the format, but it ignores
+	// the fqhn. Also we replace the Dial func with our own fakeDial() to create
+	// the socket connection. By doing this, we can leverage the
+	// client.Post/Get methods to compose our headers, etc..
+	//
+	fakeURL := "http://localhost/command-api"
+	var fakeDial = func(proto, addr string) (conn net.Conn, err error) {
+		return net.Dial("unix", defaultUnixSocket)
+	}
+
+	client := &http.Client{
+		Timeout: timeOut,
+		Transport: &http.Transport{
+			Dial: fakeDial,
+		},
+	}
+
+	resp, err := client.Post(fakeURL, "application/json", bytes.NewReader(data))
+	if err != nil {
+		conn.SetError(err)
+		return &JSONRPCResponse{}, err
+	}
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
+
+	jsonRsp := decodeEapiResponse(resp)
+
+	// check for errors in the JSON response
+	if jsonRsp.Error != nil {
+		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
+			jsonRsp.Error.Message)
+		conn.SetError(err)
+		return jsonRsp, err
+	}
+	return jsonRsp, nil
 }
 
 // Execute the list of commands on the destination node
@@ -372,7 +414,13 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
 
 	jsonRsp := decodeEapiResponse(resp)
 
@@ -484,7 +532,13 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
 
 	jsonRsp := decodeEapiResponse(resp)
 
