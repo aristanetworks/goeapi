@@ -39,17 +39,17 @@ import (
 // ShowVersion defined data structure for mapping JSON response
 // of 'show version' to manageable object
 type ShowVersion struct {
-	ModelName        string  `json:"modelName"`
-	InternalVersion  string  `json:"internalVersion"`
-	SystemMacAddress string  `json:"systemMacAddress"`
-	SerialNumber     string  `json:"serialNumber"`
-	MemTotal         int     `json:"memTotal"`
-	BootupTimestamp  float64 `json:"bootupTimestamp"`
-	MemFree          int     `json:"memFree"`
-	Version          string  `json:"version"`
-	Architecture     string  `json:"architecture"`
-	InternalBuildID  string  `json:"internalBuildId"`
-	HardwareRevision string  `json:"hardwareRevision"`
+	ModelName        string
+	InternalVersion  string
+	SystemMacAddress string
+	SerialNumber     string
+	MemTotal         int
+	BootupTimestamp  float64
+	MemFree          int
+	Version          string
+	Architecture     string
+	InternalBuildID  string
+	HardwareRevision string
 }
 
 // GetCmd returns the command type this EapiCommand relates to
@@ -60,7 +60,7 @@ func (s ShowVersion) GetCmd() string {
 // ShowInterface defined data structure for mapping JSON response
 // of 'show interface' to manageable object
 type ShowInterface struct {
-	Interfaces map[string]SwitchInterface `json:"interfaces"`
+	Interfaces map[string]SwitchInterface
 }
 
 // SwitchInterface defined data structure for mapping JSON response
