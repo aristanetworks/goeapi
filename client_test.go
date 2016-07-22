@@ -560,7 +560,7 @@ func TestClientNodeGetSection_SystemTest(t *testing.T) {
 		if found := re.MatchString(section); !found {
 			t.Fatalf("Failed to obtain section from startup-config")
 		}
-		section, err = dut.GetSection(invalidRegexp, "startup-config")
+		_, err = dut.GetSection(invalidRegexp, "startup-config")
 		if err == nil {
 			t.Fatalf("Invalid regexp didn't fail")
 		}
