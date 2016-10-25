@@ -93,6 +93,7 @@ The following configuration options are available for defining node entries:
 * **transport** - Configures the type of transport connection to use.  The default value is _https_.  Valid values are:
   * http
   * https
+  * socket
 * **port** - Configures the port to use for the eAPI connection. (Currently Not Implemented)
 
 _Note:_ See the EOS User Manual found at arista.com for more details on configuring eAPI values.

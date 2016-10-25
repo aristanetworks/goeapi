@@ -107,7 +107,7 @@ func (conn *EapiConnection) getURL() string {
 	if conn == nil {
 		return ""
 	}
-	url := conn.transport + "://" + conn.auth + "@" + conn.host + "/command-api/"
+	url := conn.transport + "://" + conn.auth + "@" + conn.host + "/command-api"
 	return url
 }
 
