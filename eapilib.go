@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015, Arista Networks, Inc.
+// Copyright (c) 2015-2016, Arista Networks, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,29 +37,32 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
 	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	SetTimeout(to uint32)
 	Error() error
 }
 
 // EapiConnection represents the base object for implementing an EapiConnection
 // type. This clase should not be instantiated directly
 type EapiConnection struct {
-	transport   string
-	err         error
-	socketError error
-	url         string
-	host        string
-	port        int
-	path        string
-	auth        string
+	transport string
+	err       error
+	url       string
+	host      string
+	port      int
+	path      string
+	auth      string
+	timeOut   uint32
 }
 
 // Execute the list of commands on the destination node. In the case of
@@ -104,7 +107,7 @@ func (conn *EapiConnection) getURL() string {
 	if conn == nil {
 		return ""
 	}
-	url := conn.transport + "://" + conn.auth + "@" + conn.host + "/command-api/"
+	url := conn.transport + "://" + conn.auth + "@" + conn.host + "/command-api"
 	return url
 }
 
@@ -130,6 +133,21 @@ func (conn *EapiConnection) ClearError() {
 		return
 	}
 	conn.err = nil
+}
+
+// SetTimeout sets timeout value for Connection
+func (conn *EapiConnection) SetTimeout(timeOut uint32) {
+	var val uint32
+	if conn == nil {
+		return
+	}
+
+	if timeOut > 65535 {
+		val = 60
+	} else {
+		val = timeOut
+	}
+	conn.timeOut = val
 }
 
 // buildJSONRequest builds a JSON request given a list of commands, encoding
@@ -171,7 +189,7 @@ const defaultUnixSocket = "/var/run/command-api.sock"
 //  Newly created SocketEapiConnection
 func NewSocketEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	return &SocketEapiConnection{conn}
 }
 
@@ -186,7 +204,49 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
-	return &JSONRPCResponse{}, fmt.Errorf("Not Currently Implemented")
+
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
+
+	// We create our fake URL. Post() will be checking the format, but it ignores
+	// the fqhn. Also we replace the Dial func with our own fakeDial() to create
+	// the socket connection. By doing this, we can leverage the
+	// client.Post/Get methods to compose our headers, etc..
+	//
+	fakeURL := "http://localhost/command-api"
+	var fakeDial = func(proto, addr string) (conn net.Conn, err error) {
+		return net.Dial("unix", defaultUnixSocket)
+	}
+
+	client := &http.Client{
+		Timeout: timeOut,
+		Transport: &http.Transport{
+			Dial: fakeDial,
+		},
+	}
+
+	resp, err := client.Post(fakeURL, "application/json", bytes.NewReader(data))
+	if err != nil {
+		conn.SetError(err)
+		return &JSONRPCResponse{}, err
+	}
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
+
+	jsonRsp := decodeEapiResponse(resp)
+
+	// check for errors in the JSON response
+	if jsonRsp.Error != nil {
+		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
+			jsonRsp.Error.Message)
+		conn.SetError(err)
+		return jsonRsp, err
+	}
+	return jsonRsp, nil
 }
 
 // Execute the list of commands on the destination node
@@ -246,7 +306,7 @@ const DefaultHTTPLocalPort = 8080
 //  Newly created SocketEapiConnection
 func NewHTTPLocalEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	return &HTTPLocalEapiConnection{conn}
 }
 
@@ -322,7 +382,7 @@ const defaultHTTPPort = 80
 func NewHTTPEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
 	port = defaultHTTPPort
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	conn.Authentication(username, password)
 	return &HTTPEapiConnection{conn}
 }
@@ -344,14 +404,23 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
 
-	client := &http.Client{}
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
+	client := &http.Client{
+		Timeout: timeOut,
+	}
 	url := conn.getURL()
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
 
 	jsonRsp := decodeEapiResponse(resp)
 
@@ -426,7 +495,7 @@ func NewHTTPSEapiConnection(transport string, host string, username string,
 	port = DefaultHTTPSPort
 	path := DefaultHTTPSPath
 
-	conn := EapiConnection{transport: transport, host: host, port: port}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 
 	conn.Authentication(username, password)
 	return &HTTPSEapiConnection{path: path, EapiConnection: conn}
@@ -448,19 +517,28 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
-	client := &http.Client{}
+	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
 	url := conn.getURL()
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client = &http.Client{Transport: tr}
+	client := &http.Client{
+		Timeout:   timeOut,
+		Transport: tr,
+	}
 
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+			conn.SetError(err)
+		}
+	}()
 
 	jsonRsp := decodeEapiResponse(resp)
 

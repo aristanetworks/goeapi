@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015, Arista Networks, Inc.
+// Copyright (c) 2015-2016, Arista Networks, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,12 @@ import (
 	"strings"
 
 	"github.com/vaughan0/go-ini"
+)
+
+//
+const (
+	RunningConfig = "running-config"
+	StartupConfig = "startup-config"
 )
 
 // A Node represents a single device for sending and receiving eAPI messages
@@ -111,7 +117,7 @@ func (n *Node) RunningConfig() string {
 	if n.runningConfig != "" {
 		return n.runningConfig
 	}
-	n.runningConfig, _ = n.GetConfig("running-config", "all")
+	n.runningConfig, _ = n.GetConfig(RunningConfig, "all")
 	return n.runningConfig
 }
 
@@ -124,7 +130,7 @@ func (n *Node) StartupConfig() string {
 	if n.startupConfig != "" {
 		return n.startupConfig
 	}
-	n.startupConfig, _ = n.GetConfig("startup-config", "")
+	n.startupConfig, _ = n.GetConfig(StartupConfig, "")
 	return n.startupConfig
 }
 
@@ -184,7 +190,7 @@ func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 // Returns:
 //  Will return a string of the config requested or error if failure
 func (n *Node) GetConfig(config string, params string) (string, error) {
-	if config != "running-config" && config != "startup-config" {
+	if config != RunningConfig && config != StartupConfig {
 		return "", fmt.Errorf("Invalid config type: %s", config)
 	}
 	commands := []string{strings.TrimSpace("show " + config + " " + params)}
@@ -208,11 +214,11 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 //  Error returned on failure.
 func (n *Node) GetSection(regex string, config string) (string, error) {
 	var params string
-	if config == "" || config == "running-config" {
-		config = "running-config"
+	if config == "" || config == RunningConfig {
+		config = RunningConfig
 		params = "all"
 	}
-	if config != "running-config" && config != "startup-config" {
+	if config != RunningConfig && config != StartupConfig {
 		return "", fmt.Errorf("Invalid config type: %s", config)
 	}
 	sectionRegex, err := regexp.Compile(regex)
@@ -593,8 +599,7 @@ func (e *EapiConfig) AddConnection(name string) ini.Section {
 // This method wil load the connection:localhost profile into the client
 // configuration if it is not already present.
 func (e *EapiConfig) addDefaultConnection() {
-	name := "localhost"
-	conn := e.GetConnection(name)
+	conn := e.GetConnection("localhost")
 	if conn == nil {
 		e.AddConnection("localhost")["transport"] = "socket"
 	}

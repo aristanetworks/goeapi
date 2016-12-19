@@ -8,22 +8,22 @@ import (
 
 // MyShowVlan ...
 type MyShowVlan struct {
-	SourceDetail string          `json:"sourceDetail"`
-	Vlans        map[string]Vlan `json:"vlans"`
+	SourceDetail string
+	Vlans        map[string]Vlan
 }
 
 // Vlan ...
 type Vlan struct {
-	Status     string               `json:"status"`
-	Name       string               `json:"name"`
-	Interfaces map[string]Interface `json:"interfaces"`
-	Dynamic    bool                 `json:"dynamic"`
+	Status     string
+	Name       string
+	Interfaces map[string]Interface
+	Dynamic    bool
 }
 
 // Interface ...
 type Interface struct {
-	Annotation      string `json:"annotation"`
-	PrivatePromoted bool   `json:"privatePromoted"`
+	Annotation      string
+	PrivatePromoted bool
 }
 
 // GetCmd ...

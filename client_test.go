@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015, Arista Networks, Inc.
+// Copyright (c) 2015-2016, Arista Networks, Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -459,6 +459,21 @@ func TestClientConnectInvalidTransport_UnitTest(t *testing.T) {
 	}
 }
 
+func TestClientConnectTimeout_UnitTest(t *testing.T) {
+	node := &Node{}
+
+	// 1.1.1.2 is assumed to be an unreachable bogus address
+	conn, err := Connect("http", "1.1.1.2", "admin", "admin", 80)
+	if err != nil {
+		t.Fatal("Error in connect.")
+	}
+	conn.SetTimeout(5)
+	node.SetConnection(conn)
+	if _, err = node.GetConfig("running-config", "all"); err == nil {
+		t.Fatal("Should timeout and return error")
+	}
+}
+
 func TestClientNodeEnablePasswd_UnitTest(t *testing.T) {
 	node := &Node{}
 	node.EnableAuthentication("root")
@@ -545,7 +560,7 @@ func TestClientNodeGetSection_SystemTest(t *testing.T) {
 		if found := re.MatchString(section); !found {
 			t.Fatalf("Failed to obtain section from startup-config")
 		}
-		section, err = dut.GetSection(invalidRegexp, "startup-config")
+		_, err = dut.GetSection(invalidRegexp, "startup-config")
 		if err == nil {
 			t.Fatalf("Invalid regexp didn't fail")
 		}
