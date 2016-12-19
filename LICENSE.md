@@ -1,4 +1,4 @@
-Copyright (c) 2015, Arista Networks
+Copyright (c) 2015-2016, Arista Networks
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
