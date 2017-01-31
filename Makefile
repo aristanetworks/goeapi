@@ -33,11 +33,9 @@ test: unittest vet
 
 systest:
 	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
-	#$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
 
 unittest:
 	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
-	#$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
 COVER_PKGS := `find . -name '*_test.go' ! -path "./.git/*" ! -path "./Godeps/*" ! -path "./vendor/*" | xargs -I{} dirname {} | sort -u`
 coverdata:
