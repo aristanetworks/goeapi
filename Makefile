@@ -41,7 +41,7 @@ COVER_PKGS := `find . -name '*_test.go' ! -path "./.git/*" ! -path "./Godeps/*" 
 coverdata:
 	echo 'mode: $(COVER_MODE)' > $(COVER_TMPFILE)
 	for dir in $(COVER_PKGS); do \
-		$(GO) test -covermode=$(COVER_MODE) -coverprofile=$(COVER_TMPFILE).tmp $$dir || exit; \
+		$(GO) test -covermode=$(COVER_MODE) -coverprofile=$(COVER_TMPFILE).tmp -run UnitTest$  $$dir || exit; \
 		tail -n +2 $(COVER_TMPFILE).tmp >> $(COVER_TMPFILE) && \
         rm $(COVER_TMPFILE).tmp; \
     done;
