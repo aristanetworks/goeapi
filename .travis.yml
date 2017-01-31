@@ -4,6 +4,7 @@ go:
 before_install:
   - go get golang.org/x/tools/cmd/cover
   - go get github.com/golang/lint/golint
+  - go get github.com/tools/godep
 install:
   - go list ./... | grep -v examples | go get
 before_script:
