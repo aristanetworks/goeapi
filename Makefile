@@ -1,11 +1,14 @@
 #
-GO := go
-GOTEST_FLAGS :=
-TEST_TIMEOUT := 120s
+GODEP := godep
+GO := $(GODEP) go
+GOTEST_FLAGS := -v
+TEST_TIMEOUT := 180s
+
+GOFILES := find . -name '*.go' ! -path './Godeps/*' ! -path './vendor/*'
+GOFOLDERS := $(GO) list ./... | sed 's:^github.com/aristanetworks/goeapi:.:' | grep -vw -e './vendor' -e './examples'
 
 # Code Coverage Related
-COV_FILE := coverage.txt
-COV_FUNC_OUT := coverage_func.out
+COVER_TMPFILE := coverage.out
 COVER_MODE := count
 
 # External Tools
@@ -29,61 +32,49 @@ install:
 test: unittest vet
 
 systest:
-	$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
+	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
+	#$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
 
 unittest:
-	$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
+	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
+	#$(GO) test $(PKGS) $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
-updatedeps:
-	$(GO) get -u github.com/mitchellh/mapstructure
-	$(GO) get -u github.com/vaughan0/go-ini
-
+COVER_PKGS := `find . -name '*_test.go' ! -path "./.git/*" ! -path "./Godeps/*" ! -path "./vendor/*" | xargs -I{} dirname {} | sort -u`
 coverdata:
-	@$(GO) tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
-		$(GO) get -u golang.org/x/tools/cmd/cover; \
-	fi
-	@echo 'mode: $(COVER_MODE)' > $(COV_FILE)
-	@for dir in $(PKGS); do \
-		$(GO) test -covermode=$(COVER_MODE) -coverprofile=cov_tmp.out -run UnitTest$  $$dir || exit; \
-		tail -n +2 cov_tmp.out >> $(COV_FILE) && \
-		rm -f cov_tmp.out; \
-	done;
+	echo 'mode: $(COVER_MODE)' > $(COVER_TMPFILE)
+	for dir in $(COVER_PKGS); do \
+		$(GO) test -covermode=$(COVER_MODE) -coverprofile=$(COVER_TMPFILE).tmp $$dir || exit; \
+		tail -n +2 $(COVER_TMPFILE).tmp >> $(COVER_TMPFILE) && \
+        rm $(COVER_TMPFILE).tmp; \
+    done;
 
 coverage: coverdata
-	$(GO) tool cover -html=$(COV_FILE)
-	@rm -f $(COV_FILE)
+	$(GO) tool cover -html=$(COVER_TMPFILE)
+	@rm -f $(COVER_TMPFILE)
 
 coveragefunc: coverdata
-	$(GO) tool cover -func=$(COV_FILE)
-	#$(GO) tool cover -func=$(COV_FILE) > $(COV_FUNC_OUT)
-	@rm -f $(COV_FILE)
+	$(GO) tool cover -func=$(COVER_TMPFILE)
+	@rm -f $(COVER_TMPFILE)
 
 # see 'go doc cmd/vet'
 # 'go tool vet .' recursively descends the directory,
 # vetting each package it finds.
 vet:
-	@$(GO) tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
-		$(GO) get golang.org/x/tools/cmd/vet; \
-	fi
-	@echo "go tool vet ."
-	@$(GO) tool vet . ; if [ $$? -eq 1 ]; then \
-		echo ""; \
-		echo "Please check the reported files and constructs for errors "; \
-		echo "and fix before submitting the code for review."; \
-	fi
+	$(GOFOLDERS) | xargs $(GO) vet
 
 # go get https://github.com/golang/lint
 lint:
-	$(GOLINT) ./...
+	lint=`$(GOFOLDERS) | xargs -L 1 $(GOLINT)`; if test -n "$$lint"; then echo "$$lint"; exit 1; fi
 
 fmt:
-	$(GO) fmt ./...
+	 $(GOFOLDERS) | xargs $(GO) fmt
 
 doc:
 	godoc -http=:6060 -index
 
 clean:
-	rm -f $(COV_FILE) $(COV_FUNC_OUT)
+	rm -f $(COVER_TMPFILE)
+	$(GO) clean ./...
 
 bootstrap:
 	@for tool in  $(EXTERNAL_TOOLS) ; do \

@@ -12,7 +12,10 @@ func main() {
 		panic(err)
 	}
 	commands := []string{"show version"}
-	conf, _ := node.Enable(commands)
+	conf, err := node.Enable(commands)
+	if err != nil {
+		panic(err)
+	}
 	for k, v := range conf[0] {
 		fmt.Println("k:", k, "v:", v)
 	}

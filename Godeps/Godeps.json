@@ -1,0 +1,18 @@
+{
+	"ImportPath": "github.com/aristanetworks/goeapi",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v78",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "21a35fb16463dfb7c8eee579c65d995d95e64d1e"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-ini",
+			"Rev": "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
+		}
+	]
+}

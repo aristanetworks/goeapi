@@ -332,7 +332,7 @@ func (n *Node) runCommands(commands []string,
 
 	result, err := n.conn.Execute(cmds, encoding)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	// pop the result for enable off the result list
 	result.Result = append(result.Result[:0], result.Result[1:]...)

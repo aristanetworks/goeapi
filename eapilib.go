@@ -237,12 +237,8 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		}
 	}()
 
-	jsonRsp := decodeEapiResponse(resp)
-
-	// check for errors in the JSON response
-	if jsonRsp.Error != nil {
-		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
-			jsonRsp.Error.Message)
+	jsonRsp, err := decodeEapiResponse(resp)
+	if err != nil {
 		conn.SetError(err)
 		return jsonRsp, err
 	}
@@ -422,12 +418,8 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		}
 	}()
 
-	jsonRsp := decodeEapiResponse(resp)
-
-	// check for errors in the JSON response
-	if jsonRsp.Error != nil {
-		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
-			jsonRsp.Error.Message)
+	jsonRsp, err := decodeEapiResponse(resp)
+	if err != nil {
 		conn.SetError(err)
 		return jsonRsp, err
 	}
@@ -540,12 +532,8 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		}
 	}()
 
-	jsonRsp := decodeEapiResponse(resp)
-
-	// check for errors in the JSON response
-	if jsonRsp.Error != nil {
-		err := fmt.Errorf("JSON Error(%d): %s", jsonRsp.Error.Code,
-			jsonRsp.Error.Message)
+	jsonRsp, err := decodeEapiResponse(resp)
+	if err != nil {
 		conn.SetError(err)
 		return jsonRsp, err
 	}
