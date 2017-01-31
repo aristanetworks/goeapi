@@ -41,7 +41,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 
 	"github.com/mitchellh/mapstructure"
@@ -326,22 +325,21 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 
 // decodeEapiResponse [private] Used to decode JSON Response into
 // structure format defined by type JSONRPCResponse
-func decodeEapiResponse(resp *http.Response) *JSONRPCResponse {
+func decodeEapiResponse(resp *http.Response) (*JSONRPCResponse, error) {
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Http error: %s", resp.Status)
+	}
+
 	dec := json.NewDecoder(resp.Body)
 	var v JSONRPCResponse
 	if err := dec.Decode(&v); err != nil {
 		log.Println(err)
+		return nil, err
 	}
-	return &v
-}
 
-// decodeEapiResponse [private] Used to decode JSON Response into
-// structure format defined by type JSONRPCResponse
-func decodeEapiSocketResponse(resp net.Conn) *JSONRPCResponse {
-	dec := json.NewDecoder(resp)
-	var v JSONRPCResponse
-	if err := dec.Decode(&v); err != nil {
-		log.Println(err)
+	if v.Error != nil {
+		err := fmt.Errorf("JSON Error(%d): %s", v.Error.Code, v.Error.Message)
+		return &v, err
 	}
-	return &v
+	return &v, nil
 }

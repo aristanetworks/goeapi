@@ -17,7 +17,10 @@ func main() {
 
 	var showversion module.ShowVersion
 	handle, _ := node.GetHandle("json")
-	handle.Enable(&showversion)
+	if err := handle.Enable(&showversion); err != nil {
+		panic(err)
+	}
+
 	fmt.Println("\nVersion:", showversion.Version)
 
 	s := module.Show(node)
