@@ -235,7 +235,7 @@ func TestClientGetConfig_UnitTest(t *testing.T) {
 		{"bogus-config", "", false},
 	}
 	for idx, tt := range tests {
-		_, err := dummyNode.GetConfig(tt.config, tt.params)
+		_, err := dummyNode.getConfigText(tt.config, tt.params)
 		if (err == nil) != tt.rc {
 			t.Fatalf("Test[%d] Expected %t in eval of (err == nil): err:%#v", idx, tt.rc, err)
 		}
@@ -245,7 +245,7 @@ func TestClientGetConfig_UnitTest(t *testing.T) {
 func TestClientGetConfigConnectionError_UnitTest(t *testing.T) {
 	conn := dummyNode.GetConnection().(*DummyEapiConnection)
 	conn.setReturnError(true)
-	ret, err := dummyNode.GetConfig("running-config", "")
+	ret, err := dummyNode.getConfigText("running-config", "")
 	if ret != "" && err == nil {
 		t.Fatalf("Connection error didn't raise issue")
 	}
@@ -469,7 +469,7 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	}
 	conn.SetTimeout(5)
 	node.SetConnection(conn)
-	if _, err = node.GetConfig("running-config", "all"); err == nil {
+	if _, err = node.getConfigText("running-config", "all"); err == nil {
 		t.Fatal("Should timeout and return error")
 	}
 }
@@ -533,7 +533,7 @@ func TestClientNodeGetStartupConfig_SystemTest(t *testing.T) {
 
 func TestClientNodeGetConfigInvalid_SystemTest(t *testing.T) {
 	for _, dut := range duts {
-		if _, err := dut.GetConfig("bogus-config", ""); err == nil {
+		if _, err := dut.getConfigText("bogus-config", ""); err == nil {
 			t.Fatal("Failed to return error on bogus-config")
 		}
 	}
