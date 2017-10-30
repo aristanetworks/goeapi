@@ -175,7 +175,7 @@ func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 	return GetHandle(n, encoding)
 }
 
-// GetConfig Retreives the config from the node
+// GetConfig Retrieves the config from the node
 //
 // This method will retrieve the config from the node as a string.
 // The config to retrieve can be specified as either
@@ -203,7 +203,7 @@ func (n *Node) GetConfig(config string, params string) (string, error) {
 	return strings.TrimSpace(first["output"].(string)), nil
 }
 
-// GetSection Retreives the config section from the Node
+// GetSection retrieves the config section from the Node
 //
 // Args:
 //  regex (string):
