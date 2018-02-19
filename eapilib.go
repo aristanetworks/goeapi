@@ -364,7 +364,8 @@ type HTTPEapiConnection struct {
 	EapiConnection
 }
 
-const defaultHTTPPort = 80
+// DefaultHTTPPort uses 80
+const DefaultHTTPPort = 80
 
 // NewHTTPEapiConnection initializes a HttpEapiConnection.
 //
@@ -381,7 +382,9 @@ const defaultHTTPPort = 80
 //  Newly created HTTPEapiConnection
 func NewHTTPEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	port = defaultHTTPPort
+	if port == UseDefaultPortNum {
+		port = DefaultHTTPPort
+	}
 	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	conn.Authentication(username, password)
 	return &HTTPEapiConnection{conn}

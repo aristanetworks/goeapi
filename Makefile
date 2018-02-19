@@ -17,18 +17,14 @@ EXTERNAL_TOOLS=\
 
 PKGS := $(shell go list ./... | grep -v /examples)
 
-ifndef GOBIN
-	GOBIN = $(GOPATH)/bin
-endif
-
-GOLINT := $(GOBIN)/golint
+GOLINT := golint
 
 all: install
 
 install:
 	$(GO) install $(PKGS)
 
-test: unittest vet
+test: vet unittest
 
 systest:
 	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$

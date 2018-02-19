@@ -124,10 +124,10 @@ func debugJSON(data []byte) {
 // EapiReqHandle
 func (handle *EapiReqHandle) checkHandle() error {
 	if handle == nil {
-		return fmt.Errorf("Invalid EapiReqHandle.")
+		return fmt.Errorf("Invalid EapiReqHandle")
 	}
 	if handle.node == nil {
-		return fmt.Errorf("No connection.")
+		return fmt.Errorf("No connection")
 	}
 	return nil
 }
@@ -148,7 +148,7 @@ func AddCommandStr(handle *EapiReqHandle, command string, v EapiCommand) error {
 		return err
 	}
 	if command == "" {
-		handle.err = fmt.Errorf("Invalid null Command string.")
+		handle.err = fmt.Errorf("Invalid null Command string")
 		return handle.err
 	}
 
@@ -283,7 +283,7 @@ func (handle *EapiReqHandle) Close() error {
 // proper handling of the handle after the close.
 func Close(handle *EapiReqHandle) error {
 	if handle == nil {
-		return fmt.Errorf("Invalid EapiReqHandle.")
+		return fmt.Errorf("Invalid EapiReqHandle")
 	}
 	handle.clearCommands()
 	handle.node = nil
