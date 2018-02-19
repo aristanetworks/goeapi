@@ -474,6 +474,29 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	}
 }
 
+func TestClientConnectDefaultPort_UnitTest(t *testing.T) {
+	tests := [...]struct {
+		proto string
+		port  int
+		descr string
+	}{
+		{"http", UseDefaultPortNum, "Http default port"},
+		{"http", 80, "Http port 80"},
+		{"https", UseDefaultPortNum, "Https default port"},
+		{"https", 443, "Https port 443"},
+		{"http_local", UseDefaultPortNum, "Http_local default port"},
+		{"http_local", 8080, "Http_local port 8080"},
+	}
+
+	for idx, tt := range tests {
+		// 1.1.1.2 is assumed to be an unreachable bogus address
+		_, err := Connect(tt.proto, "1.1.1.2", "admin", "admin", tt.port)
+		if err != nil {
+			t.Fatalf("Test[%d] %s. Error in connect: err:%#v", idx, tt.descr, err)
+		}
+	}
+}
+
 func TestClientNodeEnablePasswd_UnitTest(t *testing.T) {
 	node := &Node{}
 	node.EnableAuthentication("root")

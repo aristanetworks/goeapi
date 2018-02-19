@@ -159,7 +159,7 @@ func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
 		return nil, fmt.Errorf("Invalid encoding specified: %s", encoding)
 	}
 	if n == nil {
-		return nil, fmt.Errorf("Invalid node.")
+		return nil, fmt.Errorf("Invalid node")
 	}
 	return &EapiReqHandle{node: n, encoding: encoding}, nil
 }
@@ -230,7 +230,7 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 	}
 	sectionRegex, err := regexp.Compile(regex)
 	if err != nil {
-		return "", fmt.Errorf("Invalid regexp.")
+		return "", fmt.Errorf("Invalid regexp")
 	}
 	config, err = n.getConfigText(config, params)
 	if err != nil || config == "" {
@@ -507,7 +507,7 @@ func Connections() []string {
 func (e *EapiConfig) Read(filename string) error {
 	file, err := ini.LoadFile(filename)
 	if err != nil {
-		return fmt.Errorf("Cant read filename: %s, %#v\n", filename, err)
+		return fmt.Errorf("Cant read filename: %s, %#v", filename, err)
 	}
 	e.File = file
 
