@@ -661,11 +661,12 @@ func ConnectTo(name string) (*Node, error) {
 	if ok {
 		port, _ = strconv.Atoi(section["port"])
 	}
-	conn, err := Connect(transport, host, username, passwd, port)
+	node, err := Connect(transport, host, username, passwd, port)
 	if err != nil {
 		return nil, err
 	}
-	return &Node{conn: conn, enablePasswd: enablepwd, autoRefresh: true}, nil
+	node.EnableAuthentication(enablepwd)
+	return node, nil
 }
 
 // Connect creates a connection using the supplied settings
@@ -676,8 +677,7 @@ func ConnectTo(name string) (*Node, error) {
 // Args:
 //  transport (string): Specifies the type of connection transport to use.
 //                   Valid values for the connection are socket, http_local,
-//                   http, and https.  The default value is specified
-//                   in DEFAULT_TRANSPORT
+//                   http, and https.  https is the default.
 //  host (string): The IP addres or DNS host name of the connection device.
 //              The default value is 'localhost'
 //  username (string): The username to pass to the device to authenticate
@@ -689,8 +689,17 @@ func ConnectTo(name string) (*Node, error) {
 //              automatically determined by the transport type.
 //              (http=80, https=443)
 // Returns:
-//  An instance of an EapiConnectionEntity object for the specified transport.
+//  An instance of Node object for the specified transport.
 func Connect(transport string, host string, username string, passwd string,
+	port int) (*Node, error) {
+	conn, err := connect(transport, host, username, passwd, port)
+	if err != nil {
+		return nil, err
+	}
+	return &Node{conn: conn, autoRefresh: true}, nil
+}
+
+func connect(transport string, host string, username string, passwd string,
 	port int) (EapiConnectionEntity, error) {
 	if transport == "" {
 		transport = "https"

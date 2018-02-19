@@ -460,15 +460,13 @@ func TestClientConnectInvalidTransport_UnitTest(t *testing.T) {
 }
 
 func TestClientConnectTimeout_UnitTest(t *testing.T) {
-	node := &Node{}
-
 	// 1.1.1.2 is assumed to be an unreachable bogus address
-	conn, err := Connect("http", "1.1.1.2", "admin", "admin", 80)
+	node, err := Connect("http", "1.1.1.2", "admin", "admin", 80)
 	if err != nil {
 		t.Fatal("Error in connect.")
 	}
-	conn.SetTimeout(5)
-	node.SetConnection(conn)
+	node.GetConnection().SetTimeout(5)
+
 	if _, err = node.GetConfig("running-config", "all"); err == nil {
 		t.Fatal("Should timeout and return error")
 	}
