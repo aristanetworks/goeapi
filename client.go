@@ -117,7 +117,7 @@ func (n *Node) RunningConfig() string {
 	if n.runningConfig != "" {
 		return n.runningConfig
 	}
-	n.runningConfig, _ = n.GetConfig(RunningConfig, "all")
+	n.runningConfig, _ = n.getConfigText(RunningConfig, "all")
 	return n.runningConfig
 }
 
@@ -130,7 +130,7 @@ func (n *Node) StartupConfig() string {
 	if n.startupConfig != "" {
 		return n.startupConfig
 	}
-	n.startupConfig, _ = n.GetConfig(StartupConfig, "")
+	n.startupConfig, _ = n.getConfigText(StartupConfig, "")
 	return n.startupConfig
 }
 
@@ -175,9 +175,8 @@ func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 	return GetHandle(n, encoding)
 }
 
-// GetConfig Retreives the config from the node
+// GetConfig retrieves the config from the node.
 //
-// This method will retrieve the config from the node as a string.
 // The config to retrieve can be specified as either
 // the startup-config or the running-config. An error is returned on
 // invalid parameter or if the underlying transmit failed.
@@ -187,23 +186,31 @@ func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 //                or running-config.  The default value is the running-config
 //  params (string): A string of keywords to append to the command for
 //                retrieving the config.
+//  encoding (string): Encoding to be used
 // Returns:
-//  Will return a string of the config requested or error if failure
-func (n *Node) GetConfig(config string, params string) (string, error) {
+//  Will return the config requested or error if failure
+func (n *Node) GetConfig(config, params, encoding string) (map[string]interface{}, error) {
 	if config != RunningConfig && config != StartupConfig {
-		return "", fmt.Errorf("Invalid config type: %s", config)
+		return nil, fmt.Errorf("Invalid config type: %s", config)
 	}
 	commands := []string{strings.TrimSpace("show " + config + " " + params)}
 
-	result, err := n.runCommands(commands, "text")
+	result, err := n.runCommands(commands, encoding)
+	if err != nil {
+		return nil, err
+	}
+	return result.Result[0], nil
+}
+
+func (n *Node) getConfigText(config, params string) (string, error) {
+	result, err := n.GetConfig(config, params, "text")
 	if err != nil {
 		return "", err
 	}
-	first := result.Result[0]
-	return strings.TrimSpace(first["output"].(string)), nil
+	return strings.TrimSpace(result["output"].(string)), nil
 }
 
-// GetSection Retreives the config section from the Node
+// GetSection retrieves the config section from the Node
 //
 // Args:
 //  regex (string):
@@ -225,7 +232,7 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Invalid regexp.")
 	}
-	config, err = n.GetConfig(config, params)
+	config, err = n.getConfigText(config, params)
 	if err != nil || config == "" {
 		return "", err
 	}

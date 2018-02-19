@@ -13,8 +13,7 @@ COVER_MODE := count
 
 # External Tools
 EXTERNAL_TOOLS=\
-	golang.org/x/tools/cmd/cover \
-	golang.org/x/tools/cmd/vet
+	golang.org/x/tools/cmd/cover
 
 PKGS := $(shell go list ./... | grep -v /examples)
 
