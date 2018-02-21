@@ -668,14 +668,15 @@ func ConnectTo(name string) (*Node, error) {
 	if ok {
 		port, _ = strconv.Atoi(section["port"])
 	}
-	conn, err := Connect(transport, host, username, passwd, port)
+	node, err := Connect(transport, host, username, passwd, port)
 	if err != nil {
 		return nil, err
 	}
-	return &Node{conn: conn, enablePasswd: enablepwd, autoRefresh: true}, nil
+	node.EnableAuthentication(enablepwd)
+	return node, nil
 }
 
-// Connect creates a connection using the supplied settings
+// Connect establishes a connection (using the supplied settings) and creates a Node instance.
 //
 // This function will create a connection to an Arista EOS node using
 // the arguments.  All arguments are optional with default values.
@@ -683,8 +684,7 @@ func ConnectTo(name string) (*Node, error) {
 // Args:
 //  transport (string): Specifies the type of connection transport to use.
 //                   Valid values for the connection are socket, http_local,
-//                   http, and https.  The default value is specified
-//                   in DEFAULT_TRANSPORT
+//                   http, and https.  https is the default.
 //  host (string): The IP addres or DNS host name of the connection device.
 //              The default value is 'localhost'
 //  username (string): The username to pass to the device to authenticate
@@ -696,8 +696,38 @@ func ConnectTo(name string) (*Node, error) {
 //              automatically determined by the transport type.
 //              (http=80, https=443)
 // Returns:
-//  An instance of an EapiConnectionEntity object for the specified transport.
+//  An instance of Node object for the specified transport.
 func Connect(transport string, host string, username string, passwd string,
+	port int) (*Node, error) {
+	conn, err := Connection(transport, host, username, passwd, port)
+	if err != nil {
+		return nil, err
+	}
+	return &Node{conn: conn, autoRefresh: true}, nil
+}
+
+// Connection creates a connection using the supplied settings
+//
+// This function will create a connection to an Arista EOS node using
+// the arguments.  All arguments are optional with default values.
+//
+// Args:
+//  transport (string): Specifies the type of connection transport to use.
+//                   Valid values for the connection are socket, http_local,
+//                   http, and https.  https is the default.
+//  host (string): The IP addres or DNS host name of the connection device.
+//              The default value is 'localhost'
+//  username (string): The username to pass to the device to authenticate
+//                  the eAPI connection.   The default value is 'admin'
+//  password (string): The password to pass to the device to authenticate
+//                  the eAPI connection.  The default value is ''
+//  port (int): The TCP port of the endpoint for the eAPI connection.  If
+//              this keyword is not specified, the default value is
+//              automatically determined by the transport type.
+//              (http=80, https=443)
+// Returns:
+//  An instance of EapiConnectionEntity object for the specified transport.
+func Connection(transport string, host string, username string, passwd string,
 	port int) (EapiConnectionEntity, error) {
 	if transport == "" {
 		transport = "https"
