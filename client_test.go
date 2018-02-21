@@ -235,7 +235,7 @@ func TestClientGetConfig_UnitTest(t *testing.T) {
 		{"bogus-config", "", false},
 	}
 	for idx, tt := range tests {
-		_, err := dummyNode.GetConfig(tt.config, tt.params)
+		_, err := dummyNode.getConfigText(tt.config, tt.params)
 		if (err == nil) != tt.rc {
 			t.Fatalf("Test[%d] Expected %t in eval of (err == nil): err:%#v", idx, tt.rc, err)
 		}
@@ -245,7 +245,7 @@ func TestClientGetConfig_UnitTest(t *testing.T) {
 func TestClientGetConfigConnectionError_UnitTest(t *testing.T) {
 	conn := dummyNode.GetConnection().(*DummyEapiConnection)
 	conn.setReturnError(true)
-	ret, err := dummyNode.GetConfig("running-config", "")
+	ret, err := dummyNode.getConfigText("running-config", "")
 	if ret != "" && err == nil {
 		t.Fatalf("Connection error didn't raise issue")
 	}
@@ -467,8 +467,31 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	}
 	node.GetConnection().SetTimeout(5)
 
-	if _, err = node.GetConfig("running-config", "all"); err == nil {
+	if _, err = node.getConfigText("running-config", "all"); err == nil {
 		t.Fatal("Should timeout and return error")
+	}
+}
+
+func TestClientConnectDefaultPort_UnitTest(t *testing.T) {
+	tests := [...]struct {
+		proto string
+		port  int
+		descr string
+	}{
+		{"http", UseDefaultPortNum, "Http default port"},
+		{"http", 80, "Http port 80"},
+		{"https", UseDefaultPortNum, "Https default port"},
+		{"https", 443, "Https port 443"},
+		{"http_local", UseDefaultPortNum, "Http_local default port"},
+		{"http_local", 8080, "Http_local port 8080"},
+	}
+
+	for idx, tt := range tests {
+		// 1.1.1.2 is assumed to be an unreachable bogus address
+		_, err := Connect(tt.proto, "1.1.1.2", "admin", "admin", tt.port)
+		if err != nil {
+			t.Fatalf("Test[%d] %s. Error in connect: err:%#v", idx, tt.descr, err)
+		}
 	}
 }
 
@@ -531,7 +554,7 @@ func TestClientNodeGetStartupConfig_SystemTest(t *testing.T) {
 
 func TestClientNodeGetConfigInvalid_SystemTest(t *testing.T) {
 	for _, dut := range duts {
-		if _, err := dut.GetConfig("bogus-config", ""); err == nil {
+		if _, err := dut.getConfigText("bogus-config", ""); err == nil {
 			t.Fatal("Failed to return error on bogus-config")
 		}
 	}

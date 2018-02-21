@@ -40,6 +40,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -107,7 +108,7 @@ func (conn *EapiConnection) getURL() string {
 	if conn == nil {
 		return ""
 	}
-	url := conn.transport + "://" + conn.auth + "@" + conn.host + "/command-api"
+	url := conn.transport + "://" + conn.auth + "@" + conn.host + ":" + strconv.Itoa(conn.port) + "/command-api"
 	return url
 }
 
@@ -302,6 +303,9 @@ const DefaultHTTPLocalPort = 8080
 //  Newly created SocketEapiConnection
 func NewHTTPLocalEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
+	if port == UseDefaultPortNum {
+		port = DefaultHTTPLocalPort
+	}
 	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	return &HTTPLocalEapiConnection{conn}
 }
@@ -360,7 +364,8 @@ type HTTPEapiConnection struct {
 	EapiConnection
 }
 
-const defaultHTTPPort = 80
+// DefaultHTTPPort uses 80
+const DefaultHTTPPort = 80
 
 // NewHTTPEapiConnection initializes a HttpEapiConnection.
 //
@@ -377,7 +382,9 @@ const defaultHTTPPort = 80
 //  Newly created HTTPEapiConnection
 func NewHTTPEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	port = defaultHTTPPort
+	if port == UseDefaultPortNum {
+		port = DefaultHTTPPort
+	}
 	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
 	conn.Authentication(username, password)
 	return &HTTPEapiConnection{conn}
@@ -484,7 +491,9 @@ const DefaultHTTPSPath = "/command-api"
 //  Newly created HTTPSEapiConnection
 func NewHTTPSEapiConnection(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity {
-	port = DefaultHTTPSPort
+	if port == UseDefaultPortNum {
+		port = DefaultHTTPSPort
+	}
 	path := DefaultHTTPSPath
 
 	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}

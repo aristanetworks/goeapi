@@ -3,17 +3,17 @@
 
 #### Table of Contents
 
-1. [Overview] (#overview)
-    * [Requirements] (#requirements)
-2. [Installation] (#installation)
-3. [Upgrading] (#upgrading)
-4. [Getting Started] (#getting-started)
-    * [Example eapi.conf File] (#example-eapiconf-file)
-    * [Using goeapi] (#using-goeapi)
-5. [Building Local Documentation] (#building-documention)
-6. [Testing] (#testing)
-7. [Contributing] (#contributing)
-8. [License] (#license)
+1. [Overview](#overview)
+    * [Requirements](#requirements)
+2. [Installation](#installation)
+3. [Upgrading](#upgrading)
+4. [Getting Started](#getting-started)
+    * [Example eapi.conf File](#example-eapiconf-file)
+    * [Using goeapi](#using-goeapi)
+5. [Building Local Documentation](#building-documention)
+6. [Testing](#testing)
+7. [Contributing](#contributing)
+8. [License](#license)
 
 
 # Overview
