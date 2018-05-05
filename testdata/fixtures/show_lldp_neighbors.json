@@ -1,0 +1,35 @@
+[
+  {
+    "tablesLastChangeTime": 1525451381.4145298,
+    "tablesAgeOuts": 0,
+    "tablesInserts": 13,
+    "lldpNeighbors": [
+      {
+        "ttl": 120,
+        "neighborDevice": "node1.example.com",
+        "neighborPort": "Ethernet5/1",
+        "port": "Ethernet49/1"
+      },
+      {
+        "ttl": 120,
+        "neighborDevice": "node2.example.com",
+        "neighborPort": "Ethernet5/1",
+        "port": "Ethernet50/1"
+      },
+      {
+        "ttl": 120,
+        "neighborDevice": "node3.example.com",
+        "neighborPort": "Ethernet5/1",
+        "port": "Ethernet51/1"
+      },
+      {
+        "ttl": 120,
+        "neighborDevice": "node3.example.com",
+        "neighborPort": "Ethernet5/1",
+        "port": "Ethernet52/1"
+      }
+    ],
+    "tablesDeletes": 8,
+    "tablesDrops": 0
+  }
+]
