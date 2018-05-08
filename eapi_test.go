@@ -376,7 +376,7 @@ func TestEapiRespHandlerEnableAddError_UnitTest(t *testing.T) {
 
 func TestDebugJSON_UnitTest(t *testing.T) {
 	p := Parameters{1, cmdsToInterface([]string{"show version", "show interface"}), "json"}
-	req := Request{"2.0", "runCmds", p, 255}
+	req := Request{"2.0", "runCmds", p, "255"}
 	data, err := json.Marshal(req)
 	if err != nil {
 		t.Fatal("Should return nil")
