@@ -51,7 +51,7 @@ type Request struct {
 	Jsonrpc string     `json:"jsonrpc"`
 	Method  string     `json:"method"`
 	Params  Parameters `json:"params"`
-	ID      int        `json:"id"`
+	ID      string     `json:"id"`
 }
 
 // Parameters ...
@@ -73,7 +73,7 @@ type RawJSONRPCResponse struct {
 type JSONRPCResponse struct {
 	Jsonrpc string                   `json:"jsonrpc"`
 	Result  []map[string]interface{} `json:"result"`
-	ID      int                      `json:"id"`
+	ID      string                   `json:"id"`
 	Error   *RespError               `json:"error"`
 }
 

@@ -157,7 +157,7 @@ func (conn *EapiConnection) SetTimeout(timeOut uint32) {
 // entries both can be used. Returns []byte of the built JSON request.
 // Successful call returns err == nil.
 func buildJSONRequest(commands []interface{},
-	encoding string, reqid int) ([]byte, error) {
+	encoding string, reqid string) ([]byte, error) {
 	p := Parameters{1, commands, encoding}
 
 	req := Request{"2.0", "runCmds", p, reqid}
@@ -268,7 +268,7 @@ func (conn *SocketEapiConnection) Execute(commands []interface{},
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, os.Getpid())
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -351,7 +351,7 @@ func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, os.Getpid())
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -455,7 +455,7 @@ func (conn *HTTPEapiConnection) Execute(commands []interface{},
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, os.Getpid())
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -571,7 +571,7 @@ func (conn *HTTPSEapiConnection) Execute(commands []interface{},
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, os.Getpid())
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
