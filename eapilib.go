@@ -39,6 +39,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -100,7 +101,7 @@ func (conn *EapiConnection) Authentication(username string, passwd string) {
 	//str := base64.StdEncoding.EncodeToString(data)
 	//str = strings.Replace(str,"\n","",-1)
 	str := strings.Replace(auth, "\n", "", -1)
-	conn.auth = str
+	conn.auth = url.PathEscape(str)
 }
 
 // getURL helper method to prebuild url for http/s
