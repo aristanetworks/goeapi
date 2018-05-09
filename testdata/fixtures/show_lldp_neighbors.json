@@ -1,0 +1,40 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "tablesLastChangeTime": 1525725499.1374352,
+      "tablesAgeOuts": 0,
+      "tablesInserts": 5,
+      "lldpNeighbors": [
+        {
+          "ttl": 120,
+          "neighborDevice": "testsw1.aristanetworks.com",
+          "neighborPort": "Ethernet48",
+          "port": "Ethernet3"
+        },
+        {
+          "ttl": 120,
+          "neighborDevice": "testsw1.aristanetworks.com",
+          "neighborPort": "Ethernet47",
+          "port": "Ethernet4"
+        },
+        {
+          "ttl": 120,
+          "neighborDevice": "testsw1.aristanetworks.com",
+          "neighborPort": "Ethernet14",
+          "port": "Ethernet14"
+        },
+        {
+          "ttl": 120,
+          "neighborDevice": "testsw1.aristanetworks.com",
+          "neighborPort": "Ethernet33",
+          "port": "Management1"
+        }
+      ],
+      "tablesDeletes": 1,
+      "tablesDrops": 0
+    }
+  ]
+}
