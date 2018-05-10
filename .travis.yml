@@ -9,7 +9,7 @@ install:
   - go list ./... | grep -v examples | go get
 before_script:
   # vet the code...fail build if error
-  - go vet ./...
+  - make vet
 script:
   - go get github.com/aristanetworks/goeapi
   - make -j4 test GOTEST_FLAGS=-v

@@ -24,7 +24,7 @@ all: install
 install:
 	$(GO) install $(PKGS)
 
-test: vet unittest
+test: unittest
 
 systest:
 	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run SystemTest$
