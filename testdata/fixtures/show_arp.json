@@ -1,0 +1,39 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "dynamicEntries": 4,
+      "ipV4Neighbors": [
+        {
+          "hwAddress": "444c.a8aa.bbcc",
+          "address": "10.10.10.10",
+          "interface": "Ethernet1/1",
+          "age": 0
+        },
+        {
+          "hwAddress": "444c.a8bb.ccdd",
+          "address": "10.10.10.20",
+          "interface": "Ethernet2/1",
+          "age": 0
+        },
+        {
+          "hwAddress": "444c.a8cc.ddee",
+          "address": "10.10.10.30",
+          "interface": "Ethernet3/1",
+          "age": 0
+        },
+        {
+          "hwAddress": "444c.a8dd.eeff",
+          "address": "10.10.10.40",
+          "interface": "Ethernet4/1",
+          "age": 0
+        }
+      ],
+      "notLearnedEntries": 0,
+      "totalEntries": 4,
+      "staticEntries": 0
+    }
+  ]
+}
