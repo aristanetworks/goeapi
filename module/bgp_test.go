@@ -32,6 +32,7 @@
 package module
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -1749,5 +1750,17 @@ func TestShowIPBGPSummary_UnitTest(t *testing.T) {
 				t.Errorf("Peer UnderMaintenance does not match expected %t, got %t", peerSummary.UnderMaintenance, peer.UnderMaintenance)
 			}
 		}
+	}
+}
+
+func TestShowIPBGPSummaryErrorDuringCall_UnitTest(t *testing.T) {
+	dummyConnection := &DummyConnection{err: errors.New("error during connection")}
+	dummyNode := &goeapi.Node{}
+	dummyNode.SetConnection(dummyConnection)
+
+	show := Show(dummyNode)
+	_, err := show.ShowIPBGPSummary()
+	if err == nil {
+		t.Errorf("Error expected during show ip bgp summary")
 	}
 }

@@ -759,17 +759,9 @@ func (b *ShowIPBGPSummary) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowIPBGPSummary() (ShowIPBGPSummary, error) {
+	handle, _ := s.node.GetHandle("json")
 	var showipbgpsummary ShowIPBGPSummary
-
-	handle, err := s.node.GetHandle("json")
-	if err != nil {
-		return showipbgpsummary, err
-	}
-
-	err = handle.AddCommand(&showipbgpsummary)
-	if err != nil {
-		return showipbgpsummary, err
-	}
+	handle.AddCommand(&showipbgpsummary)
 
 	if err := handle.Call(); err != nil {
 		return showipbgpsummary, err
