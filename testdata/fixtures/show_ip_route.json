@@ -1,0 +1,46 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "vrfs": {
+        "default": {
+          "routes": {
+            "10.1.2.0/20": {
+              "kernelProgrammed": true,
+              "directlyConnected": true,
+              "routeAction": "forward",
+              "vias": [
+                {
+                  "interface": "Vlan1"
+                }
+              ],
+              "hardwareProgrammed": true,
+              "routeType": "connected"
+            },
+            "0.0.0.0/0": {
+              "kernelProgrammed": true,
+              "directlyConnected": false,
+              "preference": 1,
+              "routeAction": "forward",
+              "vias": [
+                {
+                  "interface": "Vlan1",
+                  "nexthopAddr": "10.1.2.1"
+                }
+              ],
+              "metric": 0,
+              "hardwareProgrammed": true,
+              "routeType": "static"
+            }
+          },
+          "allRoutesProgrammedKernel": true,
+          "routingDisabled": true,
+          "allRoutesProgrammedHardware": true,
+          "defaultRouteState": "reachable"
+        }
+      }
+    }
+  ]
+}
