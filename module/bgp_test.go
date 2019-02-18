@@ -32,11 +32,14 @@
 package module
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/aristanetworks/goeapi"
 )
 
 /**
@@ -1602,5 +1605,162 @@ func TestBgpRemoveNetwork_SystemTest(t *testing.T) {
 			t.Fatalf("\"network 172.16.30.0/24\" NOT expected but seen under "+
 				"router bgp 100 section.\n[%s]", section)
 		}
+	}
+}
+
+func TestShowIPBGPSummary_UnitTest(t *testing.T) {
+	var dummyNode *goeapi.Node
+	var dummyConnection *DummyConnection
+
+	dummyConnection = &DummyConnection{}
+
+	dummyNode = &goeapi.Node{}
+	dummyNode.SetConnection(dummyConnection)
+
+	show := Show(dummyNode)
+	showBgpSummary, err := show.ShowIPBGPSummary()
+	if err != nil {
+		t.Errorf("Error during show ip bgp summary, %s", err)
+	}
+
+	// Test VRFs inside the BGP Summary
+	var vrfScenarios = []struct {
+		Name     string
+		NumPeers int
+		RouterID string
+		ASN      int64
+	}{
+		{
+			Name:     "default",
+			NumPeers: 4,
+			RouterID: "10.10.10.38",
+			ASN:      65004,
+		},
+	}
+
+	for _, vrf := range vrfScenarios {
+		if _, ok := showBgpSummary.VRFs[vrf.Name]; !ok {
+			t.Errorf("VRF Name %s does not exist", vrf.Name)
+		} else {
+			vrfSummary := showBgpSummary.VRFs[vrf.Name]
+			if vrf.RouterID != vrfSummary.RouterID {
+				t.Errorf("RouterID does not match expected %s, got %s", vrfSummary.RouterID, vrf.RouterID)
+			}
+
+			if vrf.ASN != vrfSummary.ASN {
+				t.Errorf("ASN does not match expected %d, got %d", vrfSummary.ASN, vrf.ASN)
+			}
+
+			if len(vrfSummary.Peers) != vrf.NumPeers {
+				t.Errorf("Number of Peers does not match expected %d, got %d", vrf.NumPeers, len(vrfSummary.Peers))
+			}
+		}
+	}
+
+	// Test Peers inside a VRF
+	var peerScenarios = []struct {
+		ASN                 int64
+		PeerIP              string
+		PeerState           string
+		PeerStateIdleReason string
+		PrefixAccepted      int
+		PrefixReceived      int
+		UnderMaintenance    bool
+		UpDownTime          float64
+		Version             int
+	}{
+		{
+			PeerIP:              "10.10.10.33",
+			ASN:                 65000,
+			PeerState:           "Idle",
+			PeerStateIdleReason: "NoInterface",
+			PrefixAccepted:      0,
+			PrefixReceived:      0,
+			UnderMaintenance:    false,
+			UpDownTime:          1524094401.78999,
+			Version:             4,
+		},
+		{
+			PeerIP:           "10.10.10.14",
+			ASN:              65001,
+			PeerState:        "Active",
+			PrefixAccepted:   0,
+			PrefixReceived:   0,
+			UnderMaintenance: false,
+			UpDownTime:       1524094401.78899,
+			Version:          4,
+		},
+		{
+			PeerIP:           "10.10.10.216",
+			ASN:              65002,
+			PeerState:        "Established",
+			PrefixAccepted:   429,
+			PrefixReceived:   444,
+			UnderMaintenance: false,
+			UpDownTime:       1525451375.739572,
+			Version:          4,
+		},
+		{
+			PeerIP:           "10.10.10.4",
+			ASN:              65003,
+			PeerState:        "Established",
+			PrefixAccepted:   429,
+			PrefixReceived:   444,
+			UnderMaintenance: false,
+			UpDownTime:       1525451380.74079,
+			Version:          4,
+		},
+	}
+
+	for _, peer := range peerScenarios {
+		if _, ok := showBgpSummary.VRFs["default"].Peers[peer.PeerIP]; !ok {
+			t.Errorf("Peer IP %s not found in Peers", peer.PeerIP)
+		} else {
+			peerSummary := showBgpSummary.VRFs["default"].Peers[peer.PeerIP]
+
+			if peer.Version != peerSummary.Version {
+				t.Errorf("Peer Version does not match expected %d, got %d", peerSummary.Version, peer.Version)
+			}
+
+			if peer.ASN != peerSummary.ASN {
+				t.Errorf("Peer ASN does not match expected %d, got %d", peerSummary.ASN, peer.ASN)
+			}
+
+			if peer.PeerStateIdleReason != peerSummary.PeerStateIdleReason {
+				t.Errorf("Peer PeerStateIdleReason does not match expected %s, got %s", peerSummary.PeerStateIdleReason, peer.PeerStateIdleReason)
+			}
+
+			if peer.PrefixAccepted != peerSummary.PrefixAccepted {
+				t.Errorf("Peer PrefixAccepted does not match expected %d, got %d", peerSummary.PrefixAccepted, peer.PrefixAccepted)
+			}
+
+			if peer.PrefixReceived != peerSummary.PrefixReceived {
+				t.Errorf("Peer PrefixReceived does not match expected %d, got %d", peerSummary.PrefixReceived, peer.PrefixReceived)
+			}
+
+			if peer.PeerState != peerSummary.PeerState {
+				t.Errorf("Peer PeerState does not match expected %s, got %s", peerSummary.PeerState, peer.PeerState)
+			}
+
+			if peer.UpDownTime != peerSummary.UpDownTime {
+				t.Errorf("Peer UpDownTime does not match expected %f, got %f", peerSummary.UpDownTime, peer.UpDownTime)
+			}
+
+			if peer.UnderMaintenance != peerSummary.UnderMaintenance {
+				t.Errorf("Peer UnderMaintenance does not match expected %t, got %t", peerSummary.UnderMaintenance, peer.UnderMaintenance)
+			}
+		}
+	}
+}
+
+func TestShowIPBGPSummaryErrorDuringCall_UnitTest(t *testing.T) {
+	dummyConnection := &DummyConnection{err: errors.New("error during connection")}
+	dummyNode := &goeapi.Node{}
+	dummyNode.SetConnection(dummyConnection)
+
+	show := Show(dummyNode)
+	_, err := show.ShowIPBGPSummary()
+	if err == nil {
+		t.Errorf("Error expected during show ip bgp summary")
 	}
 }

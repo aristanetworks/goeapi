@@ -1,0 +1,71 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "vrfs": {
+        "default": {
+          "routerId": "10.10.10.38",
+          "peers": {
+            "10.10.10.33": {
+              "msgSent": 0,
+              "inMsgQueue": 0,
+              "peerStateIdleReason": "NoInterface",
+              "prefixReceived": 0,
+              "upDownTime": 1524094401.78999,
+              "version": 4,
+              "msgReceived": 0,
+              "prefixAccepted": 0,
+              "peerState": "Idle",
+              "outMsgQueue": 0,
+              "underMaintenance": false,
+              "asn": 65000
+            },
+            "10.10.10.14": {
+              "msgSent": 0,
+              "inMsgQueue": 0,
+              "prefixReceived": 0,
+              "upDownTime": 1524094401.78899,
+              "version": 4,
+              "msgReceived": 0,
+              "prefixAccepted": 0,
+              "peerState": "Active",
+              "outMsgQueue": 0,
+              "underMaintenance": false,
+              "asn": 65001
+            },
+            "10.10.10.216": {
+              "msgSent": 8993,
+              "inMsgQueue": 0,
+              "prefixReceived": 444,
+              "upDownTime": 1525451375.739572,
+              "version": 4,
+              "msgReceived": 9023,
+              "prefixAccepted": 429,
+              "peerState": "Established",
+              "outMsgQueue": 0,
+              "underMaintenance": false,
+              "asn": 65002
+            },
+            "10.10.10.4": {
+              "msgSent": 11814,
+              "inMsgQueue": 0,
+              "prefixReceived": 444,
+              "upDownTime": 1525451380.74079,
+              "version": 4,
+              "msgReceived": 11891,
+              "prefixAccepted": 429,
+              "peerState": "Established",
+              "outMsgQueue": 0,
+              "underMaintenance": false,
+              "asn": 65003
+            }
+          },
+          "vrf": "default",
+          "asn": 65004
+        }
+      }
+    }
+  ]
+}

@@ -727,3 +727,46 @@ func (b *BgpNeighborsEntity) SetDescriptionDefault(name string) bool {
 	cmd := b.CommandBuilder(name, "description", "", true, false)
 	return b.Configure(cmd)
 }
+
+type ShowIPBGPSummary struct {
+	VRFs map[string]VRF
+}
+
+type VRF struct {
+	RouterID string                        `json:"routerId"`
+	Peers    map[string]BGPNeighborSummary `json:"peers"`
+	VRF      string                        `json:"vrf"`
+	ASN      int64                         `json:"asn"`
+}
+
+type BGPNeighborSummary struct {
+	MsgSent             int     `json:"msgSent"`
+	InMsgQueue          int     `json:"inMsgQueue"`
+	PrefixReceived      int     `json:"prefixReceived"`
+	UpDownTime          float64 `json:"upDownTime"`
+	Version             int     `json:"version"`
+	MsgReceived         int     `json:"msgReceived"`
+	PrefixAccepted      int     `json:"prefixAccepted"`
+	PeerState           string  `json:"peerState"`
+	PeerStateIdleReason string  `json:"peerStateIdleReason,omitempty"`
+	OutMsgQueue         int     `json:"outMsgQueue"`
+	UnderMaintenance    bool    `json:"underMaintenance"`
+	ASN                 int64   `json:"asn"`
+}
+
+func (b *ShowIPBGPSummary) GetCmd() string {
+	return "show ip bgp summary"
+}
+
+func (s *ShowEntity) ShowIPBGPSummary() (ShowIPBGPSummary, error) {
+	handle, _ := s.node.GetHandle("json")
+	var showipbgpsummary ShowIPBGPSummary
+	handle.AddCommand(&showipbgpsummary)
+
+	if err := handle.Call(); err != nil {
+		return showipbgpsummary, err
+	}
+
+	handle.Close()
+	return showipbgpsummary, nil
+}
