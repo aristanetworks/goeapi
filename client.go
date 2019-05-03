@@ -262,12 +262,17 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 // This method is used to send configuration commands to the node.
 // It will takes a list of strings and prepend the necessary commands
 // to put the session into config mode.
-func (n *Node) Config(commands ...string) bool {
+func (n *Node) ConfigWithErr(commands ...string) error {
 	commands = append([]string{"configure terminal"}, commands...)
 	_, err := n.runCommands(commands, "json")
 	if n.autoRefresh {
 		n.Refresh()
 	}
+	return err
+}
+
+func (n *Node) Config(commands ...string) bool {
+	err := n.ConfigWithErr(commands...)
 	return (err == nil)
 }
 
