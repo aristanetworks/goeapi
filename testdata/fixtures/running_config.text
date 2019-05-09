@@ -301,6 +301,23 @@ default snmp-server enable traps vrrp
 default snmp-server enable traps vrrp trap-new-master
 snmp-server vrf default
 !
+ptp priority1 128
+ptp clock-identity 00:00:00:00:00:00:00:00
+ptp priority2 128
+ptp domain 0
+ptp source ip 1.1.1.1
+ptp mode boundary
+ptp ttl 30
+ptp message-type general dscp 0 default
+ptp message-type event dscp 21 default
+ptp hold-ptp-time 28800
+no ptp forward-v1
+no ptp forward-unicast
+ptp monitor
+no ptp monitor threshold offset-from-master
+no ptp monitor threshold mean-path-delay
+no ptp monitor threshold skew
+!
 spanning-tree mode mstp
 spanning-tree hello-time 2000
 spanning-tree max-age 20
@@ -543,6 +560,9 @@ interface Ethernet1
    lacp port-priority 32768
    lldp transmit
    lldp receive
+   ptp enable
+   ptp transport ipv4
+   ptp role dynamic
    no msrp
    no mvrp
    no switchport port-security
@@ -675,6 +695,8 @@ interface Ethernet2
    lacp port-priority 32768
    lldp transmit
    lldp receive
+   ptp mode master
+   ptp transport layer2
    no msrp
    no mvrp
    no switchport port-security
