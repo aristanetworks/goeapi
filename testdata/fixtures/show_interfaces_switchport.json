@@ -1,0 +1,877 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "switchports": {
+        "Ethernet8": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet9": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet2": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet3": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Port-Channel100": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": ["MLAG_PEER"],
+            "trunkAllowedVlans": "ALL",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet6": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet7": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet4": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet5": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet22": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet50/1": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 999,
+            "mode": "trunk",
+            "accessVlanName": "MGMT",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet36": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet38": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet39": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet18": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "MGMT",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 999
+          }
+        },
+        "Ethernet19": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "MGMT",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 999
+          }
+        },
+        "Ethernet32": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet15": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "MGMT",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 999
+          }
+        },
+        "Ethernet16": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "MGMT",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 999
+          }
+        },
+        "Ethernet31": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet10": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet11": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 999,
+            "mode": "trunk",
+            "accessVlanName": "MGMT",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet12": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 999,
+            "mode": "trunk",
+            "accessVlanName": "MGMT",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet35": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet1": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet37": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet14": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 999,
+            "mode": "trunk",
+            "accessVlanName": "MGMT",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet33": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet30": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet17": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "MGMT",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 999
+          }
+        },
+        "Ethernet48": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet47": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet49/1": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "ALL",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "access",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet45": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet44": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet43": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet42": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet41": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet40": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet29": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet28": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet34": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet46": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet21": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet20": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet23": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet13": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 999,
+            "mode": "trunk",
+            "accessVlanName": "MGMT",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet25": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet24": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet27": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        },
+        "Ethernet26": {
+          "enabled": true,
+          "switchportInfo": {
+            "tpidStatus": true,
+            "tpid": "0x8100",
+            "macLearning": true,
+            "staticTrunkGroups": [],
+            "trunkAllowedVlans": "999",
+            "dynamicTrunkGroups": [],
+            "accessVlanId": 1,
+            "mode": "trunk",
+            "accessVlanName": "default",
+            "trunkingNativeVlanName": "default",
+            "dynamicAllowedVlans": {},
+            "trunkingNativeVlanId": 1
+          }
+        }
+      }
+    }
+  ]
+}
