@@ -1,0 +1,35 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "ptpClockSummary": {
+        "clockIdentity": "0x01:01:01:ff:ff:01:a0:01",
+        "meanPathDelay": 230,
+        "stepsRemoved": 3,
+        "skew": 1.0000087855985595,
+        "gmClockIdentity": "0x01:01:01:ff:fe:01:a0:02",
+        "slavePort": "Ethernet49/1",
+        "numberOfMasterPorts": 1,
+        "numberOfSlavePorts": 1,
+        "currentPtpSystemTime": 1557315926,
+        "offsetFromMaster": -10,
+        "lastSyncTime": 1557315926
+      },
+      "ptpMode": "ptpBoundaryClock",
+      "ptpIntfSummaries": {
+        "Ethernet49/1": {
+          "portState": "psSlave",
+          "delayMechanism": "e2e",
+          "transportMode": "ipv4"
+        },
+        "Ethernet53/1": {
+          "portState": "psMaster",
+          "delayMechanism": "e2e",
+          "transportMode": "ipv4"
+        }
+      }
+    }
+  ]
+}
