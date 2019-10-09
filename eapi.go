@@ -251,6 +251,7 @@ func (handle *EapiReqHandle) Call() error {
 	commands := handle.getAllCommands()
 
 	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding)
+        
 	if err != nil {
 		return err
 	}
@@ -315,7 +316,13 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 		if cmd.EapiCommand == nil {
 			continue
 		}
-		err := mapstructure.Decode(result, cmd.EapiCommand)
+
+                d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ TagName: "json", Result: cmd.EapiCommand })
+                if err != nil {
+			return err
+                } 
+
+                err = d.Decode(result)
 		if err != nil {
 			return err
 		}
