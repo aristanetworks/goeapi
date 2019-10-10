@@ -39,7 +39,6 @@ import (
 	"math/rand"
 	"os"
 	"path"
-	"runtime"
 	"testing"
 	"time"
 )
@@ -50,8 +49,11 @@ const xMark = "\u2717"
 var fixturesPath = ""
 
 func init() {
-	_, filename, _, _ := runtime.Caller(1)
-	fixturesPath = path.Join(path.Dir(filename), "./testdata/fixtures")
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fixturesPath = path.Join(workingDir, "/testdata/fixtures")
 
 	rand.Seed(time.Now().UTC().UnixNano())
 }

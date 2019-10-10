@@ -34,8 +34,8 @@ package module
 import (
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"path"
-	"runtime"
 	"strconv"
 	"time"
 )
@@ -43,8 +43,12 @@ import (
 var fixturesPath = ""
 
 func init() {
-	_, filename, _, _ := runtime.Caller(1)
-	fixturesPath = path.Join(path.Dir(filename), "../testdata/fixtures")
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fixturesPath = path.Join(workingDir, "../testdata/fixtures")
+
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
