@@ -1,0 +1,62 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+      "powerSupplies": {
+        "1": {
+          "outputPower": 194.25,
+          "state": "ok",
+          "modelName": "PWR-500AC-R",
+          "capacity": 500,
+          "inputCurrent": 1.005859375,
+          "tempSensors": {
+            "TempSensorP1/2": {
+              "status": "ok",
+              "temperature": 22
+            },
+            "TempSensorP1/1": {
+              "status": "ok",
+              "temperature": 34
+            }
+          },
+          "fans": {
+            "FanP1/1": {
+              "status": "ok",
+              "speed": 36
+            }
+          },
+          "outputCurrent": 16.15625,
+          "uptime": 1567704184.8246188,
+          "managed": true
+        },
+        "2": {
+          "outputPower": 0,
+          "state": "powerLoss",
+          "modelName": "PWR-500AC-R",
+          "capacity": 500,
+          "inputCurrent": 0,
+          "tempSensors": {
+            "TempSensorP2/1": {
+              "status": "ok",
+              "temperature": 28
+            },
+            "TempSensorP2/2": {
+              "status": "ok",
+              "temperature": 25
+            }
+          },
+          "managed": true,
+          "outputCurrent": 0,
+          "fans": {
+            "FanP2/1": {
+              "status": "ok",
+              "speed": 32
+            }
+          }
+        }
+      }
+    }
+  ]
+}
