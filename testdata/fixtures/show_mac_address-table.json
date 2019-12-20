@@ -1,0 +1,31 @@
+{
+	"jsonrpc": "2.0",
+	"id": "1",
+	"result": [
+    {},
+		{
+			"multicastTable": {
+				"tableEntries": []
+			},
+			"unicastTable": {
+				"tableEntries": [{
+						"macAddress": "ab:cd:ef:12:34:56",
+						"lastMove": 1576852145.519468,
+						"interface": "Ethernet1",
+						"moves": 1,
+						"entryType": "dynamic",
+						"vlanId": 123
+					},
+					{
+						"macAddress": "ab:cd:ef:78:90:12",
+						"lastMove": 1576850000.519468,
+						"interface": "Ethernet2",
+						"moves": 5,
+						"entryType": "dynamic",
+						"vlanId": 456
+					}
+				]
+			}
+		}
+	]
+}
