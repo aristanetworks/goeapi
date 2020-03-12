@@ -257,11 +257,11 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 	return config[blockStart:blockEnd], nil
 }
 
-// Config the node with the specified commands
+// ConfigWithErr the node with the specified commands
 //
 // This method is used to send configuration commands to the node.
 // It will takes a list of strings and prepend the necessary commands
-// to put the session into config mode.
+// to put the session into config mode. Returns error if issues arise.
 func (n *Node) ConfigWithErr(commands ...string) error {
 	commands = append([]string{"configure terminal"}, commands...)
 	_, err := n.runCommands(commands, "json")
@@ -271,6 +271,11 @@ func (n *Node) ConfigWithErr(commands ...string) error {
 	return err
 }
 
+// Config the node with the specified commands
+//
+// This method is used to send configuration commands to the node.
+// It will takes a list of strings and prepend the necessary commands
+// to put the session into config mode.
 func (n *Node) Config(commands ...string) bool {
 	err := n.ConfigWithErr(commands...)
 	return (err == nil)
