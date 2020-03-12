@@ -63,7 +63,7 @@ type EapiConnection struct {
 	host      string
 	port      int
 	path      string
-	auth      string
+	auth      *url.Userinfo
 	timeOut   uint32
 }
 
@@ -96,12 +96,9 @@ func (conn *EapiConnection) Execute(commands []interface{},
 //  password (string): The password in clear text to use to authenticate
 //                      the eAPI connection with
 func (conn *EapiConnection) Authentication(username string, passwd string) {
-	auth := username + ":" + passwd
-	//data := []byte(auth)
-	//str := base64.StdEncoding.EncodeToString(data)
-	//str = strings.Replace(str,"\n","",-1)
-	str := strings.Replace(auth, "\n", "", -1)
-	conn.auth = url.PathEscape(str)
+	username = strings.Replace(username, "\n", "", -1)
+	passwd = strings.Replace(passwd, "\n", "", -1)
+	conn.auth = url.UserPassword(username, passwd)
 }
 
 // getURL helper method to prebuild url for http/s
@@ -109,8 +106,13 @@ func (conn *EapiConnection) getURL() string {
 	if conn == nil {
 		return ""
 	}
-	url := conn.transport + "://" + conn.auth + "@" + conn.host + ":" + strconv.Itoa(conn.port) + "/command-api"
-	return url
+	url := url.URL{
+		Scheme: conn.transport,
+		User:   conn.auth,
+		Host:   conn.host + ":" + strconv.Itoa(conn.port),
+		Path:   "/command-api",
+	}
+	return url.String()
 }
 
 // Error returns the current error for Connection
