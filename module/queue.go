@@ -65,9 +65,9 @@ type Entry struct {
 	IngressPortSet              []string `json:"ingress_port_set"`
 }
 
-func (l *ShowQueueMonitor) SetCmd(port string, limit bool, limitBy string, limitValue int) {
+func (l *ShowQueueMonitor) SetCmd(port string, limitBy string, limitValue int) {
 	base := "show queue-monitor length"
-	if limit {
+	if limitBy != "" && limitValue != 0 {
 		l.Cmd = fmt.Sprintf("%s %s limit %d %s", base, port, limitValue, limitBy)
 	} else {
 		l.Cmd = fmt.Sprintf("%s %s", base, port)
@@ -78,9 +78,32 @@ func (l *ShowQueueMonitor) GetCmd() string {
 	return l.Cmd
 }
 
-func (s *ShowEntity) ShowQueueMonitor(port string, limit bool, limitBy string, limitValue int) (ShowQueueMonitor, error) {
+func (s *ShowEntity) ShowQueueMonitorWithLimit(port string, limitBy string, limitValue int) (ShowQueueMonitor, error) {
 	showqueuemonitor := ShowQueueMonitor{}
-	showqueuemonitor.SetCmd(port, limit, limitBy, limitValue)
+	showqueuemonitor.SetCmd(port, limitBy, limitValue)
+
+	handle, err := s.node.GetHandle("json")
+	if err != nil {
+		return showqueuemonitor, err
+	}
+
+	err = handle.AddCommand(&showqueuemonitor)
+	if err != nil {
+		return showqueuemonitor, err
+	}
+
+	err = handle.Call()
+	if err != nil {
+		return showqueuemonitor, err
+	}
+
+	handle.Close()
+	return showqueuemonitor, nil
+}
+
+func (s *ShowEntity) ShowQueueMonitor(port string) (ShowQueueMonitor, error) {
+	showqueuemonitor := ShowQueueMonitor{}
+	showqueuemonitor.SetCmd(port, "", 0)
 
 	handle, err := s.node.GetHandle("json")
 	if err != nil {

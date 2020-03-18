@@ -17,7 +17,7 @@ func TestShowQueueMonitor_UnitTest(t *testing.T) {
 	dummyNode.SetConnection(dummyConnection)
 
 	show := Show(dummyNode)
-	showqueue, _ := show.ShowQueueMonitor("", false, "", 0)
+	showqueue, _ := show.ShowQueueMonitor("Et24")
 
 	type ShowQueueMonitor struct {
 		Cmd                 string
@@ -170,7 +170,7 @@ func TestShowQueueMonitor_UnitTest(t *testing.T) {
 		}
 	}
 
-	showqueue, _ = show.ShowQueueMonitor("Et24", true, "samples", 2)
+	showqueue, _ = show.ShowQueueMonitorWithLimit("Et24", "samples", 2)
 	entries = showqueue.EntryList
 
 	for _, tt := range scenarios {
