@@ -379,8 +379,8 @@ func TestEapiRespHandlerSetStreaming_UnitTest(t *testing.T) {
 	h, _ := dummyNode.GetHandle("text")
 	h.SetStreaming(true)
 
-	if err := h.Enable(show); err == nil {
-		t.Fatal("Should return error on adding to full command list")
+	if err := h.Enable(show); err != nil {
+		t.Fatal("Should return nil")
 	}
 	h.Close()
 	h = nil
