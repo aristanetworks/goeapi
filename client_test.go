@@ -387,7 +387,7 @@ func TestClientEnableSingleResult_SystemTest(t *testing.T) {
 		cmds := []string{
 			"show version",
 		}
-		ret, _ := dut.runCommands(cmds, "json")
+		ret, _ := dut.runCommands(cmds, "json", false)
 		if len(ret.Result) != 1 {
 			t.Fatalf("sizes do not match Result[%d] != 1\n", len(ret.Result))
 		}
@@ -399,7 +399,7 @@ func TestClientEnableMultipleResult_SystemTest(t *testing.T) {
 		for i := 0; i < RandomInt(10, 200); i++ {
 			cmds = append(cmds, "show version")
 		}
-		ret, _ := dut.runCommands(cmds, "json")
+		ret, _ := dut.runCommands(cmds, "json", false)
 		if len(ret.Result) != len(cmds) {
 			t.Fatalf("sizes do not match Result[%d] != cmds[%d]\n", len(ret.Result), len(cmds))
 		}
@@ -411,7 +411,7 @@ func TestClientEnableMultiRequests_SystemTest(t *testing.T) {
 			"show version",
 		}
 		for i := 0; i < RandomInt(10, 200); i++ {
-			ret, _ := dut.runCommands(cmds, "json")
+			ret, _ := dut.runCommands(cmds, "json", false)
 			if len(ret.Result) != 1 {
 				t.Fatalf("sizes do not match Result[%d] != 1\n", len(ret.Result))
 			}
@@ -428,7 +428,7 @@ func TestClientConfigSingle_SystemTest(t *testing.T) {
 			t.Fatalf("Config failure\n")
 		}
 		name := strings.Split(cmds[len(cmds)-1], " ")[1]
-		ret, _ := dut.runCommands([]string{"show hostname"}, "json")
+		ret, _ := dut.runCommands([]string{"show hostname"}, "json", false)
 		if ret.Result[0]["hostname"] != name {
 			t.Fatalf("Expecting %s got %s\n", name, ret.Result[0]["hostname"])
 		}
@@ -446,7 +446,7 @@ func TestClientConfigMultiple_SystemTest(t *testing.T) {
 		}
 		// just check last
 		name := strings.Split(cmds[len(cmds)-1], " ")[1]
-		ret, _ := dut.runCommands([]string{"show hostname"}, "json")
+		ret, _ := dut.runCommands([]string{"show hostname"}, "json", false)
 		if ret.Result[0]["hostname"] != name {
 			t.Fatalf("Expecting %s got %s\n", name, ret.Result[0]["hostname"])
 		}

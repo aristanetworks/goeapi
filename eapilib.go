@@ -49,7 +49,7 @@ import (
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
-	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	Execute(commands []interface{}, encoding string, streaming bool) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
 	Error() error
 }
@@ -79,7 +79,7 @@ type EapiConnection struct {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *EapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
@@ -160,10 +160,10 @@ func (conn *EapiConnection) SetTimeout(timeOut uint32) {
 // entries both can be used. Returns []byte of the built JSON request.
 // Successful call returns err == nil.
 func buildJSONRequest(commands []interface{},
-	encoding string, reqid string) ([]byte, error) {
+	encoding string, streaming bool, reqid string) ([]byte, error) {
 	p := Parameters{1, commands, encoding}
 
-	req := Request{"2.0", "runCmds", p, reqid}
+	req := Request{"2.0", "runCmds", streaming, p, reqid}
 	data, err := json.Marshal(req)
 	//debugJSON(data)
 	return data, err
@@ -266,12 +266,12 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *SocketEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -349,12 +349,12 @@ func (conn *HTTPLocalEapiConnection) send(data []byte) (*JSONRPCResponse, error)
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -453,12 +453,12 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -569,12 +569,12 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPSEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err

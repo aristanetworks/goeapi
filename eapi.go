@@ -48,10 +48,11 @@ import (
 
 // Request ...
 type Request struct {
-	Jsonrpc string     `json:"jsonrpc"`
-	Method  string     `json:"method"`
-	Params  Parameters `json:"params"`
-	ID      string     `json:"id"`
+	Jsonrpc   string     `json:"jsonrpc"`
+	Method    string     `json:"method"`
+	Streaming bool       `json:"streaming"`
+	Params    Parameters `json:"params"`
+	ID        string     `json:"id"`
 }
 
 // Parameters ...
@@ -105,6 +106,7 @@ const (
 type EapiReqHandle struct {
 	node         *Node
 	encoding     string
+	streaming    bool
 	eapiCommands []commandBlock
 	err          error
 }
@@ -250,8 +252,8 @@ func (handle *EapiReqHandle) Call() error {
 
 	commands := handle.getAllCommands()
 
-	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding)
-        
+	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding, handle.streaming)
+
 	if err != nil {
 		return err
 	}
@@ -317,17 +319,22 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 			continue
 		}
 
-                d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ TagName: "json", Result: cmd.EapiCommand })
-                if err != nil {
+		d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: cmd.EapiCommand})
+		if err != nil {
 			return err
-                } 
+		}
 
-                err = d.Decode(result)
+		err = d.Decode(result)
 		if err != nil {
 			return err
 		}
 	}
 	return err
+}
+
+// SetStreaming enables streaming mode for long running requests
+func (handle *EapiReqHandle) SetStreaming(streaming bool) {
+	handle.streaming = streaming
 }
 
 // decodeEapiResponse [private] Used to decode JSON Response into

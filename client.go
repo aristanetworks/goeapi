@@ -195,7 +195,7 @@ func (n *Node) GetConfig(config, params, encoding string) (map[string]interface{
 	}
 	commands := []string{strings.TrimSpace("show " + config + " " + params)}
 
-	result, err := n.runCommands(commands, encoding)
+	result, err := n.runCommands(commands, encoding, false)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ func (n *Node) GetSection(regex string, config string) (string, error) {
 // to put the session into config mode. Returns error if issues arise.
 func (n *Node) ConfigWithErr(commands ...string) error {
 	commands = append([]string{"configure terminal"}, commands...)
-	_, err := n.runCommands(commands, "json")
+	_, err := n.runCommands(commands, "json", false)
 	if n.autoRefresh {
 		n.Refresh()
 	}
@@ -302,7 +302,7 @@ func (n *Node) Enable(commands []string) ([]map[string]string, error) {
 	}
 
 	results := make([]map[string]string, len(commands))
-	jsonRsp, err := n.runCommands(commands, "text")
+	jsonRsp, err := n.runCommands(commands, "text", false)
 	if err != nil {
 		return results, err
 	}
@@ -330,7 +330,7 @@ func (n *Node) Enable(commands []string) ([]map[string]string, error) {
 //  This method will return the raw response from the connection
 //  which is a JSONRPCResponse object or error on failure.
 func (n *Node) runCommands(commands []string,
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, streaming bool) (*JSONRPCResponse, error) {
 	var cmds []interface{}
 
 	// Check to see if enablePasswd has been set. In the case where
@@ -347,7 +347,7 @@ func (n *Node) runCommands(commands []string,
 		cmds = cmdsToInterface(commands)
 	}
 
-	result, err := n.conn.Execute(cmds, encoding)
+	result, err := n.conn.Execute(cmds, encoding, streaming)
 	if err != nil {
 		return nil, err
 	}

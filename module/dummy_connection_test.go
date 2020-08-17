@@ -16,7 +16,7 @@ type DummyConnection struct {
 }
 
 func (conn *DummyConnection) Execute(commands []interface{},
-	encoding string) (*goeapi.JSONRPCResponse, error) {
+	encoding string, streaming bool) (*goeapi.JSONRPCResponse, error) {
 
 	if encoding != "json" {
 		return nil, fmt.Errorf("%s encoding not implemented", encoding)
