@@ -86,7 +86,7 @@ func NewDummyEapiConnection(transport string, host string, username string,
 }
 
 func (conn *DummyEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
+	encoding string) (*JSONRPCResponse, error) {
 	if conn.retError {
 		conn.retError = false
 		err := fmt.Errorf("Mock Error")
@@ -116,6 +116,12 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 	}
 
 	return resp, nil
+}
+
+func (conn *DummyEapiConnection) Stream(commands []interface{},
+	encoding string) (*JSONRPCResponse, error) {
+
+	return conn.Execute(commands, encoding)
 }
 
 func (conn *DummyEapiConnection) setReturnError(enable bool) {

@@ -49,9 +49,11 @@ import (
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
-	Execute(commands []interface{}, encoding string, streaming bool) (*JSONRPCResponse, error)
+	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	Stream(commands []interface{}, encoding string) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
 	Error() error
+	send(data []byte) (*JSONRPCResponse, error)
 }
 
 // EapiConnection represents the base object for implementing an EapiConnection
@@ -67,6 +69,13 @@ type EapiConnection struct {
 	timeOut   uint32
 }
 
+func (conn *EapiConnection) send(data []byte) (*JSONRPCResponse, error) {
+	if conn == nil {
+		return &JSONRPCResponse{}, fmt.Errorf("No connection")
+	}
+	return &JSONRPCResponse{}, fmt.Errorf("Not Currently Implemented")
+}
+
 // Execute the list of commands on the destination node. In the case of
 // EapiConnection, this serves as a base model and is not fully implemented.
 //
@@ -79,11 +88,42 @@ type EapiConnection struct {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *EapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
+	encoding string) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
-	return &JSONRPCResponse{}, fmt.Errorf("Not Currently Implemented")
+	conn.ClearError()
+	data, err := buildJSONRequest(commands, encoding, false, strconv.Itoa(os.Getpid()))
+	if err != nil {
+		conn.SetError(err)
+		return &JSONRPCResponse{}, err
+	}
+	return conn.send(data)
+}
+
+// Stream the list of commands on the destination node. In the case of
+// EapiConnection, this serves as a base model and is not fully implemented.
+//
+// Args:
+//  commands ([]interface): list of commands to execute on remote node
+//  encoding (string): The encoding to send along with the request
+//                      message to the destination node.  Valid values include
+//                      'json' or 'text'.  This argument will influence the
+//                      response encoding
+// Returns:
+//  pointer to JSONRPCResponse or error on failure
+func (conn *EapiConnection) Stream(commands []interface{},
+	encoding string) (*JSONRPCResponse, error) {
+	if conn == nil {
+		return &JSONRPCResponse{}, fmt.Errorf("No connection")
+	}
+	conn.ClearError()
+	data, err := buildJSONRequest(commands, encoding, true, strconv.Itoa(os.Getpid()))
+	if err != nil {
+		conn.SetError(err)
+		return &JSONRPCResponse{}, err
+	}
+	return conn.send(data)
 }
 
 // Authentication Configures the user authentication for eAPI. This method
@@ -249,36 +289,6 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	return jsonRsp, nil
 }
 
-// Execute the list of commands on the destination node
-//
-// This method takes a list of commands and sends them to the
-// destination node, returning the results. It is assumed that the
-// list of commands (type []interface{}) has been properly built and
-// enable mode passwd is set if needed. On success, a reference
-// to JSONRPCResponse is returned...otherwise err is set.
-//
-// Args:
-//  commands ([]interface): list of commands to execute on remote node
-//  encoding (string): The encoding to send along with the request
-//                      message to the destination node.  Valid values include
-//                      'json' or 'text'.  This argument will influence the
-//                      response encoding
-// Returns:
-//  pointer to JSONRPCResponse or error on failure
-func (conn *SocketEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
-	}
-	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
-	if err != nil {
-		conn.SetError(err)
-		return &JSONRPCResponse{}, err
-	}
-	return conn.send(data)
-}
-
 // HTTPLocalEapiConnection is an EapiConnection suited for local HTTP connection
 type HTTPLocalEapiConnection struct {
 	EapiConnection
@@ -330,36 +340,6 @@ func (conn *HTTPLocalEapiConnection) send(data []byte) (*JSONRPCResponse, error)
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
 	return &JSONRPCResponse{}, fmt.Errorf("Not Currently Implemented")
-}
-
-// Execute the list of commands
-//
-// This method takes a list of commands and sends them to the
-// destination node, returning the results. It is assumed that the
-// list of commands (type []interface{}) has been properly built and
-// enable mode passwd is set if needed. On success, a reference
-// to JSONRPCResponse is returned...otherwise err is set.
-//
-// Args:
-//  commands ([]interface): list of commands to execute on remote node
-//  encoding (string): The encoding to send along with the request
-//                      message to the destination node.  Valid values include
-//                      'json' or 'text'.  This argument will influence the
-//                      response encoding
-// Returns:
-//  pointer to JSONRPCResponse or error on failure
-func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
-	}
-	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
-	if err != nil {
-		conn.SetError(err)
-		return &JSONRPCResponse{}, err
-	}
-	return conn.send(data)
 }
 
 // HTTPEapiConnection is an EapiConnection suited for HTTP connection
@@ -434,36 +414,6 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		return jsonRsp, err
 	}
 	return jsonRsp, nil
-}
-
-// Execute the list of commands on the destination node
-//
-// This method takes a list of commands and sends them to the
-// destination node, returning the results. It is assumed that the
-// list of commands (type []interface{}) has been properly built and
-// enable mode passwd is set if needed. On success, a reference
-// to JSONRPCResponse is returned...otherwise err is set.
-//
-// Args:
-//  commands ([]interface): list of commands to execute on remote node
-//  encoding (string): The encoding to send along with the request
-//                      message to the destination node.  Valid values include
-//                      'json' or 'text'.  This argument will influence the
-//                      response encoding
-// Returns:
-//  pointer to JSONRPCResponse or error on failure
-func (conn *HTTPEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
-	}
-	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
-	if err != nil {
-		conn.SetError(err)
-		return &JSONRPCResponse{}, err
-	}
-	return conn.send(data)
 }
 
 // HTTPSEapiConnection is an EapiConnection suited for HTTP connection
@@ -550,36 +500,6 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		return jsonRsp, err
 	}
 	return jsonRsp, nil
-}
-
-// Execute the list of commands on the destination node
-//
-// This method takes a list of commands and sends them to the
-// destination node, returning the results. It is assumed that the
-// list of commands (type []interface{}) has been properly built and
-// enable mode passwd is set if needed. On success, a reference
-// to JSONRPCResponse is returned...otherwise err is set.
-//
-// Args:
-//  commands ([]interface): list of commands to execute on remote node
-//  encoding (string): The encoding to send along with the request
-//                      message to the destination node.  Valid values include
-//                      'json' or 'text'.  This argument will influence the
-//                      response encoding
-// Returns:
-//  pointer to JSONRPCResponse or error on failure
-func (conn *HTTPSEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
-	}
-	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, streaming, strconv.Itoa(os.Getpid()))
-	if err != nil {
-		conn.SetError(err)
-		return &JSONRPCResponse{}, err
-	}
-	return conn.send(data)
 }
 
 // disableCertificateVerification disables https verification

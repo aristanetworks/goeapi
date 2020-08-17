@@ -347,7 +347,7 @@ func (n *Node) runCommands(commands []string,
 		cmds = cmdsToInterface(commands)
 	}
 
-	result, err := n.conn.Execute(cmds, encoding, streaming)
+	result, err := n.conn.Execute(cmds, encoding)
 	if err != nil {
 		return nil, err
 	}

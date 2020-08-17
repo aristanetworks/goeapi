@@ -238,6 +238,7 @@ func (handle *EapiReqHandle) Call() error {
 	}
 
 	var cmd interface{}
+
 	if handle.node.enablePasswd != "" {
 		cmd = map[string]string{
 			"cmd":   "enable",
@@ -252,7 +253,13 @@ func (handle *EapiReqHandle) Call() error {
 
 	commands := handle.getAllCommands()
 
-	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding, handle.streaming)
+	var err error
+	var jsonrsp *JSONRPCResponse
+	if handle.streaming == false {
+		jsonrsp, err = handle.node.conn.Execute(commands, handle.encoding)
+	} else {
+		jsonrsp, err = handle.node.conn.Stream(commands, handle.encoding)
+	}
 
 	if err != nil {
 		return err

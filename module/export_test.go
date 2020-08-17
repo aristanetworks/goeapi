@@ -137,7 +137,7 @@ func NewDummyEapiConnection(transport string, host string, username string,
 }
 
 func (conn *DummyEapiConnection) Execute(commands []interface{},
-	encoding string, streaming bool) (*goeapi.JSONRPCResponse, error) {
+	encoding string) (*goeapi.JSONRPCResponse, error) {
 	if conn.retError {
 		conn.retError = false
 		err := fmt.Errorf("Mock Error")

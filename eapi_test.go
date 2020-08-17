@@ -380,7 +380,7 @@ func TestEapiRespHandlerSetStreaming_UnitTest(t *testing.T) {
 	h.SetStreaming(true)
 
 	if err := h.Enable(show); err != nil {
-		t.Fatal("Should return nil")
+		t.Fatal(err)
 	}
 	h.Close()
 	h = nil
