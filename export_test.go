@@ -86,7 +86,7 @@ func NewDummyEapiConnection(transport string, host string, username string,
 }
 
 func (conn *DummyEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn.retError {
 		conn.retError = false
 		err := fmt.Errorf("Mock Error")
@@ -100,7 +100,7 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 		Result: make([]map[string]interface{}, len(commands)),
 	}
 
-	if encoding == "json" {
+	if params.Format == "json" {
 		return resp, nil
 	}
 
@@ -109,7 +109,7 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 		resp.Result[idx]["output"] = ""
 	}
 
-	if encoding == "text" && len(commands) >= 2 &&
+	if params.Format == "text" && len(commands) >= 2 &&
 		(commands[1] == "show running-config all" ||
 			commands[1] == "show startup-config") {
 		resp.Result[1]["output"] = LoadFixtureFile("running_config.text")
@@ -119,9 +119,9 @@ func (conn *DummyEapiConnection) Execute(commands []interface{},
 }
 
 func (conn *DummyEapiConnection) Stream(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 
-	return conn.Execute(commands, encoding)
+	return conn.Execute(commands, params)
 }
 
 func (conn *DummyEapiConnection) setReturnError(enable bool) {

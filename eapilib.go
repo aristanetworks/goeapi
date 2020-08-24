@@ -49,8 +49,7 @@ import (
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
-	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
-	Stream(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	Execute(commands []interface{}, params Parameters) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
 	Error() error
 	send(data []byte) (*JSONRPCResponse, error)
@@ -88,37 +87,12 @@ func (conn *EapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *EapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, false, strconv.Itoa(os.Getpid()))
-	if err != nil {
-		conn.SetError(err)
-		return &JSONRPCResponse{}, err
-	}
-	return conn.send(data)
-}
-
-// Stream the list of commands on the destination node. In the case of
-// EapiConnection, this serves as a base model and is not fully implemented.
-//
-// Args:
-//  commands ([]interface): list of commands to execute on remote node
-//  encoding (string): The encoding to send along with the request
-//                      message to the destination node.  Valid values include
-//                      'json' or 'text'.  This argument will influence the
-//                      response encoding
-// Returns:
-//  pointer to JSONRPCResponse or error on failure
-func (conn *EapiConnection) Stream(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
-	if conn == nil {
-		return &JSONRPCResponse{}, fmt.Errorf("No connection")
-	}
-	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, true, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, params)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -199,12 +173,63 @@ func (conn *EapiConnection) SetTimeout(timeOut uint32) {
 // up of a list of interface{} types. This is so associative entries and list
 // entries both can be used. Returns []byte of the built JSON request.
 // Successful call returns err == nil.
-func buildJSONRequest(commands []interface{},
-	encoding string, streaming bool, reqid string) ([]byte, error) {
-	p := Parameters{1, commands, encoding}
+func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 
-	req := Request{"2.0", "runCmds", streaming, p, reqid}
-	data, err := json.Marshal(req)
+	reqID := strconv.Itoa(os.Getpid())
+
+	params := struct {
+		Version            int           `json:"version"`
+		Cmds               []interface{} `json:"cmds"`
+		Format             string        `json:"format"`
+		Timestamps         bool          `json:"timestamps,omitempty"`
+		AutoComplete       bool          `json:"autoComplete,omitempty"`
+		ExpandAliases      bool          `json:"expandAliases,omitempty"`
+		IncludeErrorDetail bool          `json:"includeErrorDetail,omitempty"`
+		Streaming          bool          `json:"streaming,omitempty"`
+	}{
+		Version: 1,
+		Cmds:    commands,
+	}
+
+	if p.Format == "" {
+		params.Format = "text"
+	}
+
+	if p.Timestamps == true {
+		params.Timestamps = p.Timestamps
+	}
+
+	if p.AutoComplete == true {
+		params.AutoComplete = p.AutoComplete
+	}
+
+	if p.ExpandAliases == true {
+		params.ExpandAliases = p.ExpandAliases
+	}
+
+	if p.IncludeErrorDetail == true {
+		params.IncludeErrorDetail = p.IncludeErrorDetail
+	}
+
+	if p.Streaming == true {
+		params.Streaming = p.Streaming
+	}
+
+	request := struct {
+		Method    string      `json:"method"`
+		Params    interface{} `json:"params,omitempty"`
+		Streaming bool        `json:"streaming,omitempty"`
+		ID        string      `json:"id,omitempty"`
+		JSONRPC   string      `json:"jsonrpc"`
+	}{
+		JSONRPC:   "2.0",
+		Method:    "runCmds",
+		Streaming: p.Streaming, // jsonprc hack that eapi understands, moving this under params in 4.24
+		Params:    params,
+		ID:        reqID,
+	}
+
+	data, err := json.Marshal(request)
 	//debugJSON(data)
 	return data, err
 }

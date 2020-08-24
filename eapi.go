@@ -50,16 +50,21 @@ import (
 type Request struct {
 	Jsonrpc   string     `json:"jsonrpc"`
 	Method    string     `json:"method"`
-	Streaming bool       `json:"streaming"`
+	Streaming bool       `json:"streaming,omitempty"`
 	Params    Parameters `json:"params"`
 	ID        string     `json:"id"`
 }
 
 // Parameters ...
 type Parameters struct {
-	Version int           `json:"version"`
-	Cmds    []interface{} `json:"cmds"`
-	Format  string        `json:"format"`
+	// Version            int           `json:"version"`
+	// Cmds               []interface{} `json:"cmds"`
+	Format             string `json:"format"`
+	Timestamps         bool   `json:"timestamps,omitempty"`
+	AutoComplete       bool   `json:"autoComplete,omitempty"`
+	ExpandAliases      bool   `json:"expandAliases,omitempty"`
+	IncludeErrorDetail bool   `json:"includeErrorDetail,omitempty"`
+	Streaming          bool   `json:"streaming,omitempty"`
 }
 
 // RawJSONRPCResponse ...
@@ -105,8 +110,7 @@ const (
 // EapiReqHandle ...
 type EapiReqHandle struct {
 	node         *Node
-	encoding     string
-	streaming    bool
+	params       Parameters
 	eapiCommands []commandBlock
 	err          error
 }
@@ -255,11 +259,8 @@ func (handle *EapiReqHandle) Call() error {
 
 	var err error
 	var jsonrsp *JSONRPCResponse
-	if handle.streaming == false {
-		jsonrsp, err = handle.node.conn.Execute(commands, handle.encoding)
-	} else {
-		jsonrsp, err = handle.node.conn.Stream(commands, handle.encoding)
-	}
+
+	jsonrsp, err = handle.node.conn.Execute(commands, handle.params)
 
 	if err != nil {
 		return err
@@ -339,9 +340,15 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 	return err
 }
 
-// SetStreaming enables streaming mode for long running requests
-func (handle *EapiReqHandle) SetStreaming(streaming bool) {
-	handle.streaming = streaming
+// SetParams sets eapi parameters
+func (handle *EapiReqHandle) SetParams(p Parameters) {
+
+	// keep format from GetHandle
+	if p.Format == "" {
+		p.Format = handle.params.Format
+	}
+
+	handle.params = p
 }
 
 // decodeEapiResponse [private] Used to decode JSON Response into
