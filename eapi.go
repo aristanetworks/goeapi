@@ -340,17 +340,6 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 	return err
 }
 
-// SetParams sets eapi parameters
-func (handle *EapiReqHandle) SetParams(p Parameters) {
-
-	// keep format from GetHandle
-	if p.Format == "" {
-		p.Format = handle.params.Format
-	}
-
-	handle.params = p
-}
-
 // decodeEapiResponse [private] Used to decode JSON Response into
 // structure format defined by type JSONRPCResponse
 func decodeEapiResponse(resp *http.Response) (*JSONRPCResponse, error) {
