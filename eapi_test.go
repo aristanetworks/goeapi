@@ -32,6 +32,7 @@
 package goeapi
 
 import (
+	"encoding/json"
 	"regexp"
 	"testing"
 )
@@ -383,15 +384,39 @@ func TestEapiRespHandlerSetStreaming_UnitTest(t *testing.T) {
 	h = nil
 }
 
-// func TestDebugJSON_UnitTest(t *testing.T) {
-// 	p := Parameters{1, cmdsToInterface([]string{"show version", "show interface"}), "json"}
-// 	req := Request{"2.0", "runCmds", false, p, "255"}
-// 	data, err := json.Marshal(req)
-// 	if err != nil {
-// 		t.Fatal("Should return nil")
-// 	}
-// 	debugJSON(data)
-// }
+func TestDebugJSON_UnitTest(t *testing.T) {
+	//p := Parameters{1, cmdsToInterface([]string{"show version", "show interface"}), "json"}
+	p := struct {
+		Version            int           `json:"version"`
+		Cmds               []interface{} `json:"cmds"`
+		Format             string        `json:"format"`
+		Timestamps         bool          `json:"timestamps,omitempty"`
+		AutoComplete       bool          `json:"autoComplete,omitempty"`
+		ExpandAliases      bool          `json:"expandAliases,omitempty"`
+		IncludeErrorDetail bool          `json:"includeErrorDetail,omitempty"`
+		Streaming          bool          `json:"streaming,omitempty"`
+	}{
+		Version: 1,
+		Cmds:    cmdsToInterface([]string{"show version", "show interface"}),
+		Format:  "json",
+	}
+	req := struct {
+		Method  string      `json:"method"`
+		Params  interface{} `json:"params,omitempty"`
+		ID      string      `json:"id,omitempty"`
+		JSONRPC string      `json:"jsonrpc"`
+	}{
+		JSONRPC: "2.0",
+		Method:  "runCmds",
+		Params:  p,
+		ID:      "1001",
+	}
+	data, err := json.Marshal(req)
+	if err != nil {
+		t.Fatal("Should return nil")
+	}
+	debugJSON(data)
+}
 
 func TestEapiCall_SystemTest(t *testing.T) {
 	showdummy := new(MyShow)
