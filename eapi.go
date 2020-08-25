@@ -46,56 +46,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// Format for eapi response
-type Format int
-
-const (
-	// Text formatting for eapi responses
-	Text Format = 0
-
-	// JSON formatting for eapi responses
-	JSON Format = 1
-)
-
-// FormatFromString converts a string to Format constant
-func FormatFromString(s string) Format {
-	var f Format
-
-	switch s {
-	case "text":
-		f = Text
-	case "json":
-		f = JSON
-	}
-
-	return f
-}
-
-// String
-func (f Format) String() string {
-	return [...]string{"text", "json"}[f]
-}
-
-// MarshalJSON renders a Format to a json string
-func (f Format) MarshalJSON() ([]byte, error) {
-	buffer := bytes.NewBufferString(`"`)
-	buffer.WriteString(f.String())
-	buffer.WriteString(`"`)
-	return buffer.Bytes(), nil
-}
-
-// UnmarshalJSON decodes a json string to a Format
-func (f Format) UnmarshalJSON(b []byte) error {
-	var j string
-	err := json.Unmarshal(b, &j)
-	if err != nil {
-		return err
-	}
-
-	f = FormatFromString(j)
-	return nil
-}
-
 // Request ...
 type Request struct {
 	Jsonrpc   string     `json:"jsonrpc"`
