@@ -98,7 +98,7 @@ func main() {
 	shVlanRsp := &showVlan{}
 	shIntRsp := &showInterfacesStatus{}
 
-	handle, _ := node.GetHandle("json")
+	handle, _ := node.GetHandle(goeapi.Parameters{Format: "json"})
 	handle.AddCommand(shVerRsp)
 	handle.AddCommand(shHostnameRsp)
 	handle.AddCommand(shVlanRsp)

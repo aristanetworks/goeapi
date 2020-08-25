@@ -32,7 +32,7 @@ func main() {
 
 	svRsp := &showVersionResp{}
 
-	handle, _ := node.GetHandle("json")
+	handle, _ := node.GetHandle(goeapi.Parameters{Format: "json"})
 	handle.AddCommand(svRsp)
 	if err := handle.Call(); err != nil {
 		panic(err)

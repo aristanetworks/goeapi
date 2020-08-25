@@ -171,8 +171,8 @@ func GetHandle(n *Node, params Parameters) (*EapiReqHandle, error) {
 //
 // Returns:
 //  Pointer to an EapiReqHandle or error on failure
-func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
-	return GetHandle(n, Parameters{Format: encoding})
+func (n *Node) GetHandle(p Parameters) (*EapiReqHandle, error) {
+	return GetHandle(n, p)
 }
 
 // GetConfig retrieves the config from the node.

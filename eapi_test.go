@@ -73,7 +73,7 @@ func (s *MyShow) GetCmd() string {
 
 func TestEapiGetHandleNodeInvalid_UnitTest(t *testing.T) {
 	var node *Node
-	h, err := node.GetHandle("json")
+	h, err := node.GetHandle(Parameters{Format: "json"})
 	if err == nil {
 		t.Fatal("GetHandle invalid failed")
 	}
@@ -86,7 +86,7 @@ func TestEapiGetHandleNodeInvalid_UnitTest(t *testing.T) {
 func TestEapiRespHandlerInvalidAddCommandStr_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	h = nil
 	err := h.AddCommandStr("", showdummy)
 	if err == nil {
@@ -101,7 +101,7 @@ func TestEapiRespHandlerInvalidAddCommandStr_UnitTest(t *testing.T) {
 func TestEapiRespHandlerAddCommandStrNull_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 
 	err := h.AddCommandStr("", showdummy)
 	if err == nil {
@@ -112,7 +112,7 @@ func TestEapiRespHandlerAddCommandStrNull_UnitTest(t *testing.T) {
 func TestEapiRespHandlerInvalidAddCommand_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	h = nil
 	err := AddCommand(h, showdummy)
 	if err == nil {
@@ -123,7 +123,7 @@ func TestEapiRespHandlerInvalidAddCommand_UnitTest(t *testing.T) {
 func TestEapiRespHandlerGetAllCommands_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 
 	tests := [...]string{
 		"show version",
@@ -150,7 +150,7 @@ func TestEapiRespHandlerGetAllCommands_UnitTest(t *testing.T) {
 func TestEapiRespHandlerAddCommand_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 
 	tests := [...]struct {
 		in   int
@@ -177,7 +177,7 @@ func TestEapiRespHandlerAddCommand_UnitTest(t *testing.T) {
 func TestEapiRespHandlerGetAllCommandsChecks_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 
 	for i := 0; i < 10; i++ {
 		h.AddCommand(showdummy)
@@ -206,7 +206,7 @@ func TestEapiRespHandlerGetAllCommandsChecks_UnitTest(t *testing.T) {
 func TestEapiRespHandlerClearCommands_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 
 	tests := [...]struct {
 		in   int
@@ -260,7 +260,7 @@ func TestEapiRespHandlerCloseClearCommands_UnitTest(t *testing.T) {
 		{120, 64},
 	}
 	for _, tt := range tests {
-		h, _ := node.GetHandle("json")
+		h, _ := node.GetHandle(Parameters{Format: "json"})
 		for i := 0; i < tt.in; i++ {
 			h.AddCommand(showdummy)
 		}
@@ -278,7 +278,7 @@ func TestEapiRespHandlerCloseClearCommands_UnitTest(t *testing.T) {
 
 func TestEapiRespHandlerCallHandleNil_UnitTest(t *testing.T) {
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	h = nil
 	if err := h.Call(); err == nil {
 		t.Fatal("Should return error on nil handle Call()")
@@ -287,7 +287,7 @@ func TestEapiRespHandlerCallHandleNil_UnitTest(t *testing.T) {
 
 func TestEapiRespHandlerCallNodeNil_UnitTest(t *testing.T) {
 	node := &Node{}
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	h.Close()
 	if err := h.Call(); err == nil {
 		t.Fatal("Should return error on nil node Call()")
@@ -296,7 +296,7 @@ func TestEapiRespHandlerCallNodeNil_UnitTest(t *testing.T) {
 
 func TestEapiRespHandlerCallEnableInvalidAdd_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
-	h, _ := dummyNode.GetHandle("json")
+	h, _ := dummyNode.GetHandle(Parameters{Format: "json"})
 	for i := 0; i < 5; i++ {
 		h.AddCommandStr("", showdummy)
 	}
@@ -310,7 +310,7 @@ func TestEapiRespHandlerCallEnableInvalidAdd_UnitTest(t *testing.T) {
 func TestEapiRespHandlerCallEnablePasswd_UnitTest(t *testing.T) {
 	showdummy := new(MyShow)
 	dummyNode.EnableAuthentication("root")
-	h, _ := dummyNode.GetHandle("json")
+	h, _ := dummyNode.GetHandle(Parameters{Format: "json"})
 	for i := 0; i < 5; i++ {
 		h.AddCommand(showdummy)
 	}
@@ -324,7 +324,7 @@ func TestEapiRespHandlerCallEnablePasswd_UnitTest(t *testing.T) {
 func TestEapiRespHandlerNilHandleClose_UnitTest(t *testing.T) {
 	node := &Node{}
 
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	h = nil
 	if err := h.Close(); err == nil {
 		t.Fatal("Should return error on nil handle close")
@@ -334,7 +334,7 @@ func TestEapiRespHandlerNilHandleClose_UnitTest(t *testing.T) {
 func TestEapiRespHandlerGetNode_UnitTest(t *testing.T) {
 	node := &Node{}
 
-	h, _ := node.GetHandle("json")
+	h, _ := node.GetHandle(Parameters{Format: "json"})
 	n, err := h.getNode()
 	if n != node {
 		t.Fatal("Should be same")
@@ -349,7 +349,7 @@ func TestEapiRespHandlerGetNode_UnitTest(t *testing.T) {
 func TestEapiRespHandlerEnable_UnitTest(t *testing.T) {
 	show := new(ShowRunning)
 	dummyNode.EnableAuthentication("")
-	h, _ := dummyNode.GetHandle("text")
+	h, _ := dummyNode.GetHandle(Parameters{Format: "text"})
 	if err := h.Enable(show); err != nil {
 		t.Fatal("error on Enable()")
 	}
@@ -362,7 +362,7 @@ func TestEapiRespHandlerEnable_UnitTest(t *testing.T) {
 
 func TestEapiRespHandlerEnableAddError_UnitTest(t *testing.T) {
 	show := new(ShowRunning)
-	h, _ := dummyNode.GetHandle("text")
+	h, _ := dummyNode.GetHandle(Parameters{Format: "text"})
 	for i := 0; i < maxCmdBuflen+1; i++ {
 		h.AddCommand(show)
 	}
@@ -373,10 +373,9 @@ func TestEapiRespHandlerEnableAddError_UnitTest(t *testing.T) {
 	h = nil
 }
 
-func TestEapiRespHandlerSetParams_UnitTest(t *testing.T) {
+func TestEapiRespHandlerSetStreaming_UnitTest(t *testing.T) {
 	show := new(ShowRunning)
-	h, _ := dummyNode.GetHandle("text")
-	h.SetParams(Parameters{Format: "text", Streaming: true})
+	h, _ := dummyNode.GetHandle(Parameters{Format: "text", Streaming: true})
 	if err := h.Enable(show); err != nil {
 		t.Fatal(err)
 	}
@@ -404,7 +403,7 @@ func TestEapiCall_SystemTest(t *testing.T) {
 		"show version",
 	}
 	for _, dut := range duts {
-		h, err := dut.GetHandle("json")
+		h, err := dut.GetHandle(Parameters{Format: "json"})
 		if err != nil {
 			t.Fatalf("GetHandle() failed: Error[%s]", err)
 		}
@@ -423,7 +422,7 @@ func TestEapiEnable_SystemTest(t *testing.T) {
 	showdummy := new(MyShow)
 	re := regexp.MustCompile(`^([0-9a-fA-F]{2}[:-]){5}([0-9a-fA-F]{2})$`)
 	for _, dut := range duts {
-		h, err := dut.GetHandle("json")
+		h, err := dut.GetHandle(Parameters{Format: "json"})
 		if err != nil {
 			t.Fatalf("GetHandle() failed: Error[%s]", err)
 		}

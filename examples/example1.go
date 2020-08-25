@@ -16,7 +16,7 @@ func main() {
 	fmt.Println(conf)
 
 	var showversion module.ShowVersion
-	handle, _ := node.GetHandle("json")
+	handle, _ := node.GetHandle(goeapi.Parameters{Format: "json"})
 	if err := handle.Enable(&showversion); err != nil {
 		panic(err)
 	}

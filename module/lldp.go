@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowLLDPNeighbors struct {
 	TablesLastChangeTime float64        `json:"tablesLastChangeTime"`
 	TablesAgeouts        int            `json:"tablesAgeOuts"`
@@ -53,7 +55,7 @@ func (l *ShowLLDPNeighbors) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowLLDPNeighbors() ShowLLDPNeighbors {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showlldpneighbors ShowLLDPNeighbors
 	handle.AddCommand(&showlldpneighbors)
 	handle.Call()

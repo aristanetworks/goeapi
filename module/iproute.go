@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowIPRoute struct {
 	VRFs map[string]Routes `json:"vrfs"`
 }
@@ -59,7 +61,7 @@ func (r *ShowIPRoute) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowIPRoute() ShowIPRoute {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showiproute ShowIPRoute
 	handle.AddCommand(&showiproute)
 	handle.Call()

@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowARP struct {
 	DynamicEntries    int            `json:"dynamicEntries"`
 	IPv4Neighbors     []IPv4Neighbor `json:"ipV4Neighbors"`
@@ -54,7 +56,7 @@ func (a *ShowARP) GetCmd() string {
 func (s *ShowEntity) ShowARP() (ShowARP, error) {
 	var showarp ShowARP
 
-	handle, err := s.node.GetHandle("json")
+	handle, err := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	if err != nil {
 		return showarp, err
 	}
