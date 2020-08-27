@@ -171,7 +171,7 @@ func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 		AutoComplete       bool          `json:"autoComplete,omitempty"`
 		ExpandAliases      bool          `json:"expandAliases,omitempty"`
 		IncludeErrorDetail bool          `json:"includeErrorDetail,omitempty"`
-		Streaming          bool          `json:"streaming,omitempty"`
+		//Streaming          bool          `json:"streaming,omitempty"`
 	}{
 		Version: 1,
 		Cmds:    commands,
@@ -183,6 +183,9 @@ func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 		params.Format = p.Format
 	}
 
+	//
+	// Omit optional fields if not set
+	//
 	if p.Timestamps == true {
 		params.Timestamps = p.Timestamps
 	}
@@ -199,9 +202,9 @@ func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 		params.IncludeErrorDetail = p.IncludeErrorDetail
 	}
 
-	if p.Streaming == true {
-		params.Streaming = p.Streaming
-	}
+	// if p.Streaming == true {
+	// 	params.Streaming = p.Streaming
+	// }
 
 	request := struct {
 		Method    string      `json:"method"`
