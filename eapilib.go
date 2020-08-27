@@ -175,12 +175,11 @@ func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 	}{
 		Version: 1,
 		Cmds:    commands,
+		Format:  p.Format,
 	}
 
-	if p.Format == "" {
+	if params.Format == "" {
 		params.Format = "text"
-	} else {
-		params.Format = p.Format
 	}
 
 	//
