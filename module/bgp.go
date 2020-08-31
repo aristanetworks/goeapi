@@ -759,7 +759,7 @@ func (b *ShowIPBGPSummary) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowIPBGPSummary() (ShowIPBGPSummary, error) {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showipbgpsummary ShowIPBGPSummary
 	handle.AddCommand(&showipbgpsummary)
 

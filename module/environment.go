@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowEnvironmentPower struct {
 	PowerSupplies map[string]struct {
 		OutputPower  float64 `json:"outputPower"`
@@ -58,7 +60,7 @@ func (b *ShowEnvironmentPower) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowEnvironmentPower() (ShowEnvironmentPower, error) {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showenvironmentpower ShowEnvironmentPower
 	handle.AddCommand(&showenvironmentpower)
 

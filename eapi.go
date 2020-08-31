@@ -48,17 +48,23 @@ import (
 
 // Request ...
 type Request struct {
-	Jsonrpc string     `json:"jsonrpc"`
-	Method  string     `json:"method"`
-	Params  Parameters `json:"params"`
-	ID      string     `json:"id"`
+	Jsonrpc   string     `json:"jsonrpc"`
+	Method    string     `json:"method"`
+	Streaming bool       `json:"streaming,omitempty"`
+	Params    Parameters `json:"params"`
+	ID        string     `json:"id"`
 }
 
 // Parameters ...
 type Parameters struct {
-	Version int           `json:"version"`
-	Cmds    []interface{} `json:"cmds"`
-	Format  string        `json:"format"`
+	// Version            int           `json:"version"`
+	// Cmds               []interface{} `json:"cmds"`
+	Format             string `json:"format"`
+	Timestamps         bool   `json:"timestamps,omitempty"`
+	AutoComplete       bool   `json:"autoComplete,omitempty"`
+	ExpandAliases      bool   `json:"expandAliases,omitempty"`
+	IncludeErrorDetail bool   `json:"includeErrorDetail,omitempty"`
+	Streaming          bool   `json:"streaming,omitempty"`
 }
 
 // RawJSONRPCResponse ...
@@ -104,7 +110,7 @@ const (
 // EapiReqHandle ...
 type EapiReqHandle struct {
 	node         *Node
-	encoding     string
+	params       Parameters
 	eapiCommands []commandBlock
 	err          error
 }
@@ -236,6 +242,7 @@ func (handle *EapiReqHandle) Call() error {
 	}
 
 	var cmd interface{}
+
 	if handle.node.enablePasswd != "" {
 		cmd = map[string]string{
 			"cmd":   "enable",
@@ -250,8 +257,11 @@ func (handle *EapiReqHandle) Call() error {
 
 	commands := handle.getAllCommands()
 
-	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding)
-        
+	var err error
+	var jsonrsp *JSONRPCResponse
+
+	jsonrsp, err = handle.node.conn.Execute(commands, handle.params)
+
 	if err != nil {
 		return err
 	}
@@ -317,12 +327,12 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 			continue
 		}
 
-                d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ TagName: "json", Result: cmd.EapiCommand })
-                if err != nil {
+		d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: cmd.EapiCommand})
+		if err != nil {
 			return err
-                } 
+		}
 
-                err = d.Decode(result)
+		err = d.Decode(result)
 		if err != nil {
 			return err
 		}

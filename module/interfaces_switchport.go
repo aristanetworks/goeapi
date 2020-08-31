@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowInterfacesSwitchport struct {
 	Switchports map[string]Switchport `json:"switchports"`
 }
@@ -61,7 +63,7 @@ func (l *ShowInterfacesSwitchport) GetCmd() string {
 }
 
 func (s *ShowEntity) ShowInterfacesSwitchport() ShowInterfacesSwitchport {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showInterfacesSwitchport ShowInterfacesSwitchport
 	handle.AddCommand(&showInterfacesSwitchport)
 	handle.Call()

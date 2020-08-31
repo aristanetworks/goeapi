@@ -32,6 +32,8 @@
 
 package module
 
+import "github.com/aristanetworks/goeapi"
+
 type ShowMACAddressTable struct {
 	MulticastTable struct {
 		TableEntries []MACAddressTableEntry `json:"tableEntries"`
@@ -57,7 +59,7 @@ func (a *ShowMACAddressTable) GetCmd() string {
 func (s *ShowEntity) ShowMACAddressTable() (ShowMACAddressTable, error) {
 	var showmacaddresstable ShowMACAddressTable
 
-	handle, err := s.node.GetHandle("json")
+	handle, err := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	if err != nil {
 		return showmacaddresstable, err
 	}

@@ -287,7 +287,7 @@ func (b *ShowPTP) GetCmd() string {
 
 func (s *ShowEntity) ShowPTP() (ShowPTP, error) {
 	var showptp ShowPTP
-	handle, err := s.node.GetHandle("json")
+	handle, err := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	if err != nil {
 		return showptp, err
 	}

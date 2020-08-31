@@ -49,7 +49,7 @@ import (
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
-	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	Execute(commands []interface{}, params Parameters) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
 	Error() error
 }
@@ -159,12 +159,67 @@ func (conn *EapiConnection) SetTimeout(timeOut uint32) {
 // up of a list of interface{} types. This is so associative entries and list
 // entries both can be used. Returns []byte of the built JSON request.
 // Successful call returns err == nil.
-func buildJSONRequest(commands []interface{},
-	encoding string, reqid string) ([]byte, error) {
-	p := Parameters{1, commands, encoding}
+func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 
-	req := Request{"2.0", "runCmds", p, reqid}
-	data, err := json.Marshal(req)
+	reqID := strconv.Itoa(os.Getpid())
+
+	params := struct {
+		Version            int           `json:"version"`
+		Cmds               []interface{} `json:"cmds"`
+		Format             string        `json:"format"`
+		Timestamps         bool          `json:"timestamps,omitempty"`
+		AutoComplete       bool          `json:"autoComplete,omitempty"`
+		ExpandAliases      bool          `json:"expandAliases,omitempty"`
+		IncludeErrorDetail bool          `json:"includeErrorDetail,omitempty"`
+		//Streaming          bool          `json:"streaming,omitempty"`
+	}{
+		Version: 1,
+		Cmds:    commands,
+		Format:  p.Format,
+	}
+
+	if params.Format == "" {
+		params.Format = "text"
+	}
+
+	//
+	// Only set optional parameters if set
+	//
+	if p.Timestamps == true {
+		params.Timestamps = p.Timestamps
+	}
+
+	if p.AutoComplete == true {
+		params.AutoComplete = p.AutoComplete
+	}
+
+	if p.ExpandAliases == true {
+		params.ExpandAliases = p.ExpandAliases
+	}
+
+	if p.IncludeErrorDetail == true {
+		params.IncludeErrorDetail = p.IncludeErrorDetail
+	}
+
+	// if p.Streaming == true {
+	// 	params.Streaming = p.Streaming
+	// }
+
+	request := struct {
+		Method    string      `json:"method"`
+		Params    interface{} `json:"params,omitempty"`
+		Streaming bool        `json:"streaming,omitempty"`
+		ID        string      `json:"id,omitempty"`
+		JSONRPC   string      `json:"jsonrpc"`
+	}{
+		JSONRPC:   "2.0",
+		Method:    "runCmds",
+		Streaming: p.Streaming, // jsonprc hack that eapi understands, moving this under params in 4.24
+		Params:    params,
+		ID:        reqID,
+	}
+
+	data, err := json.Marshal(request)
 	//debugJSON(data)
 	return data, err
 }
@@ -266,12 +321,12 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *SocketEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, params)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -349,12 +404,12 @@ func (conn *HTTPLocalEapiConnection) send(data []byte) (*JSONRPCResponse, error)
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, params)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -453,12 +508,12 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, params)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -569,12 +624,12 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPSEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	params Parameters) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, params)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err

@@ -186,7 +186,7 @@ func Show(node *goeapi.Node) *ShowEntity {
 // (with "json" key in the struct field's tag value) for the
 // decoded response from 'show version' command
 func (s *ShowEntity) ShowVersion() ShowVersion {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showversion ShowVersion
 	handle.AddCommand(&showversion)
 	handle.Call()
@@ -198,7 +198,7 @@ func (s *ShowEntity) ShowVersion() ShowVersion {
 // (with "json" key in the struct field's tag value) for the
 // decoded response from 'show interfaces' command
 func (s *ShowEntity) ShowInterfaces() ShowInterface {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showinterface ShowInterface
 	handle.AddCommand(&showinterface)
 	handle.Call()
@@ -210,7 +210,7 @@ func (s *ShowEntity) ShowInterfaces() ShowInterface {
 // (with "json" key in the struct field's tag value) for the
 // decoded response from 'show vlan trunk group' command
 func (s *ShowEntity) ShowTrunkGroups() ShowTrunkGroup {
-	handle, _ := s.node.GetHandle("json")
+	handle, _ := s.node.GetHandle(goeapi.Parameters{Format: "json"})
 	var showTrunkGroups ShowTrunkGroup
 	handle.AddCommand(&showTrunkGroups)
 	handle.Call()

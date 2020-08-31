@@ -39,7 +39,7 @@ func main() {
 
 	sv := &MyShowVlan{}
 
-	handle, _ := node.GetHandle("json")
+	handle, _ := node.GetHandle(goeapi.Parameters{Format: "json"})
 	handle.AddCommand(sv)
 	if err := handle.Call(); err != nil {
 		panic(err)

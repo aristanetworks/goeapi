@@ -16,10 +16,10 @@ type DummyConnection struct {
 }
 
 func (conn *DummyConnection) Execute(commands []interface{},
-	encoding string) (*goeapi.JSONRPCResponse, error) {
+	params goeapi.Parameters) (*goeapi.JSONRPCResponse, error) {
 
-	if encoding != "json" {
-		return nil, fmt.Errorf("%s encoding not implemented", encoding)
+	if params.Format != "json" {
+		return nil, fmt.Errorf("%s encoding not implemented", params.Format)
 	}
 
 	if conn.err != nil {
