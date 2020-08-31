@@ -183,7 +183,7 @@ func buildJSONRequest(commands []interface{}, p Parameters) ([]byte, error) {
 	}
 
 	//
-	// Omit optional fields if not set
+	// Only set optional parameters if set
 	//
 	if p.Timestamps == true {
 		params.Timestamps = p.Timestamps
