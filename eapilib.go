@@ -51,20 +51,22 @@ import (
 type EapiConnectionEntity interface {
 	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
+	SetDisableKeepAlive(disableKeepAlive bool)
 	Error() error
 }
 
 // EapiConnection represents the base object for implementing an EapiConnection
 // type. This clase should not be instantiated directly
 type EapiConnection struct {
-	transport string
-	err       error
-	url       string
-	host      string
-	port      int
-	path      string
-	auth      *url.Userinfo
-	timeOut   uint32
+	transport        string
+	err              error
+	url              string
+	host             string
+	port             int
+	path             string
+	auth             *url.Userinfo
+	timeOut          uint32
+	disableKeepAlive bool
 }
 
 // Execute the list of commands on the destination node. In the case of
@@ -152,6 +154,11 @@ func (conn *EapiConnection) SetTimeout(timeOut uint32) {
 		val = timeOut
 	}
 	conn.timeOut = val
+}
+
+// SetDisableKeepAlive sets disablekeepalive value for Connection
+func (conn *EapiConnection) SetDisableKeepAlive(disableKeepAlive bool) {
+	conn.disableKeepAlive = disableKeepAlive
 }
 
 // buildJSONRequest builds a JSON request given a list of commands, encoding
@@ -388,7 +395,7 @@ func NewHTTPEapiConnection(transport string, host string, username string,
 	if port == UseDefaultPortNum {
 		port = DefaultHTTPPort
 	}
-	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60, disableKeepAlive: false}
 	conn.Authentication(username, password)
 	return &HTTPEapiConnection{conn}
 }
@@ -410,9 +417,14 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 		return &JSONRPCResponse{}, fmt.Errorf("No Connection")
 	}
 
+	tr := &http.Transport{
+		DisableKeepAlives: conn.disableKeepAlive,
+	}
+
 	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
 	client := &http.Client{
-		Timeout: timeOut,
+		Timeout:   timeOut,
+		Transport: tr,
 	}
 	url := conn.getURL()
 	resp, err := client.Post(url, "application/json", bytes.NewReader(data))
@@ -499,7 +511,7 @@ func NewHTTPSEapiConnection(transport string, host string, username string,
 	}
 	path := DefaultHTTPSPath
 
-	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60}
+	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60, disableKeepAlive: false}
 
 	conn.Authentication(username, password)
 	return &HTTPSEapiConnection{path: path, EapiConnection: conn}
@@ -524,7 +536,8 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
 	url := conn.getURL()
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+		DisableKeepAlives: conn.disableKeepAlive,
 	}
 	client := &http.Client{
 		Timeout:   timeOut,
