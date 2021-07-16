@@ -125,10 +125,10 @@ ip msdp timer 30
 !
 lacp system-priority 32768
 !
-no queue-monitor length
+queue-monitor length
 !
 queue-monitor length global-buffer thresholds 512 256
-no queue-monitor length mirror
+queue-monitor length mirror
 !
 queue-monitor length global-buffer
 !
