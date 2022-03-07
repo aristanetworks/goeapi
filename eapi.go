@@ -182,6 +182,41 @@ func (handle *EapiReqHandle) AddCommand(v EapiCommand) error {
 	return AddCommandStr(handle, command, v)
 }
 
+// AddCommandRevisionStr adds a command string with specified EapiCommand type and
+// revision to the command block list for this EapiReqHandle.
+func AddCommandWithRevisionStr(handle *EapiReqHandle, command string, revision int, v EapiCommand) error {
+        if err := handle.checkHandle(); err != nil {
+                return err
+        }
+        if command == "" {
+                handle.err = fmt.Errorf("Invalid null Command string")
+                return handle.err
+        }
+
+        if len(handle.eapiCommands) == maxCmdBuflen {
+                handle.err = fmt.Errorf("Limit of %d commands reached for AddCommand",
+                        maxCmdBuflen)
+                return handle.err
+        }
+
+        type RevisionCommand struct {
+                Cmd      string `json:"cmd"`
+                Revision int    `json:"revision"`
+        }
+
+        cmd := RevisionCommand{Cmd: command, Revision: revision}
+        cmdBlock := commandBlock{command: cmd, EapiCommand: v}
+        handle.eapiCommands = append(handle.eapiCommands, cmdBlock)
+        return nil
+}
+
+// AddCommandRevision adds a pre-defined EapiCommand type of specified revsion
+// to the command block list for this EapiReqHandle.
+func (handle *EapiReqHandle) AddCommandWithRevsion(v EapiCommand, revision int) error {
+        command := v.GetCmd()
+        return AddCommandWithRevisionStr(handle, command, revision, v)
+}
+
 // getAllCommands iterates through the list of command blocks
 // and returns the commands as an array of interfaces.
 func (handle *EapiReqHandle) getAllCommands() []interface{} {
