@@ -282,13 +282,13 @@ func (n *Node) Config(commands ...string) bool {
 	return (err == nil)
 }
 
-// Return the EOS version for this node
-//
-// This method is used to return the current version of the running node.
+// Version returns the EOS version for this node
 func (n *Node) Version() string {
 	return n.versionNumber
 }
 
+// getVersionNumber is used to populate the versionNumber for this node. This
+// is called during the Connect.
 func (n *Node) getVersionNumber() error {
 	result, err := n.RunCommands([]string{"show version"}, "json")
 	if err != nil {
@@ -709,6 +709,7 @@ func ConnectTo(name string) (*Node, error) {
 		return nil, err
 	}
 	node.EnableAuthentication(enablepwd)
+	// Populate the versionNumber for this node
 	node.getVersionNumber()
 	return node, nil
 }
@@ -741,6 +742,7 @@ func Connect(transport string, host string, username string, passwd string,
 		return nil, err
 	}
 	node := &Node{conn: conn, autoRefresh: true}
+	// Populate the versionNumber for this node
 	node.getVersionNumber()
 
 	return node, nil
