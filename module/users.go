@@ -54,7 +54,7 @@ var usersRegex = regexp.MustCompile(`(?m)username ([^\s]+) privilege (\d+)` +
 	`(?m)(?: role ([^\s]+))?` +
 	`(?m)(?: (nopassword))?` +
 	`(?m)(?: secret (0|5|7|sha512) (.+))?` +
-	`(?m).*$\n(?:username ([^\s]+) sshkey (.+)$)?`)
+	`(?m).*$\n(?:username ([^\s]+) ssh-?key (.+)$)?`)
 
 // UserConfig represents a parsed user entry containing:
 //
@@ -217,7 +217,7 @@ func parseUsername(config string) UserConfig {
 		`(?: role ([^\s]+))?` +
 		`(?: (nopassword))?` +
 		`(?: secret (0|5|7|sha512) (.+))?` +
-		`.*$\n(?:username ([^\s]+) sshkey (.+)$)?`)
+		`.*$\n(?:username ([^\s]+) ssh-?key (.+)$)?`)
 
 	var resource = make(UserConfig)
 
@@ -364,11 +364,18 @@ func (u *UserEntity) SetRole(name string, value string) bool {
 // Returns:
 //  True if the operation was successful otherwise False
 func (u *UserEntity) SetSshkey(name string, value string) bool {
+	versionRegex := regexp.MustCompile(`\d.\d+`)
+	versionNumber := versionRegex.FindString(u.Version())
+
+	sshkey := "ssh-key"
+	if versionNumber < "4.23" {
+		sshkey = "sshkey"
+	}
 	var cmd = "username " + name
 	if value != "" {
-		cmd = cmd + " sshkey " + value
+		cmd = cmd + " " + sshkey + " " + value
 	} else {
-		cmd = "no " + cmd + " sshkey"
+		cmd = "no " + cmd + " " + sshkey
 	}
 	return u.Configure(cmd)
 }

@@ -224,6 +224,30 @@ func TestUsersParseUsername_UnitTest(t *testing.T) {
 				"sshkey":     "",
 			},
 		},
+		{
+			"username test-user privilege 15 role network-admin nopassword\nusername test-user sshkey ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEFqQxWvCw3wbD4iIY9qOO2WojYgRd3UwzA0jcdCB0Lv6mYEuup+kKmQa/88EzgAnvzPxJmn85ma+RqDGEcVQB4fO3tnyV7Fbm6PkzK1TLuQ9oDu6/m6Q+/hSjf4VXPA1OcVA8DqZMF6IoeJoWRffTXzPOonNlpbHAZTqLP0NBcAZj0Uhm2COgfRTqwHLnVH9zVemviRGeufV6smbbZ9/lY5+AOT3GNC9V/5nECxI3rx6Iw/Zz1KOmv1OyaEogEbqdhAs1DwzgXaEjh5HtoLPGtDb30xpCimlID5b3C5V1rlwx+LLt5pPStHwpr3vpCjAiRXoNOl+v9i19cXbkPZ35 test-user@moon\n",
+			UserConfig{
+				"username":   "test-user",
+				"privilege":  "15",
+				"role":       "network-admin",
+				"nopassword": "true",
+				"format":     "",
+				"secret":     "",
+				"sshkey":     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEFqQxWvCw3wbD4iIY9qOO2WojYgRd3UwzA0jcdCB0Lv6mYEuup+kKmQa/88EzgAnvzPxJmn85ma+RqDGEcVQB4fO3tnyV7Fbm6PkzK1TLuQ9oDu6/m6Q+/hSjf4VXPA1OcVA8DqZMF6IoeJoWRffTXzPOonNlpbHAZTqLP0NBcAZj0Uhm2COgfRTqwHLnVH9zVemviRGeufV6smbbZ9/lY5+AOT3GNC9V/5nECxI3rx6Iw/Zz1KOmv1OyaEogEbqdhAs1DwzgXaEjh5HtoLPGtDb30xpCimlID5b3C5V1rlwx+LLt5pPStHwpr3vpCjAiRXoNOl+v9i19cXbkPZ35 test-user@moon",
+			},
+		},
+		{
+			"username test-user privilege 15 role network-admin nopassword\nusername test-user ssh-key ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEFqQxWvCw3wbD4iIY9qOO2WojYgRd3UwzA0jcdCB0Lv6mYEuup+kKmQa/88EzgAnvzPxJmn85ma+RqDGEcVQB4fO3tnyV7Fbm6PkzK1TLuQ9oDu6/m6Q+/hSjf4VXPA1OcVA8DqZMF6IoeJoWRffTXzPOonNlpbHAZTqLP0NBcAZj0Uhm2COgfRTqwHLnVH9zVemviRGeufV6smbbZ9/lY5+AOT3GNC9V/5nECxI3rx6Iw/Zz1KOmv1OyaEogEbqdhAs1DwzgXaEjh5HtoLPGtDb30xpCimlID5b3C5V1rlwx+LLt5pPStHwpr3vpCjAiRXoNOl+v9i19cXbkPZ35 test-user@moon\n",
+			UserConfig{
+				"username":   "test-user",
+				"privilege":  "15",
+				"role":       "network-admin",
+				"nopassword": "true",
+				"format":     "",
+				"secret":     "",
+				"sshkey":     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEFqQxWvCw3wbD4iIY9qOO2WojYgRd3UwzA0jcdCB0Lv6mYEuup+kKmQa/88EzgAnvzPxJmn85ma+RqDGEcVQB4fO3tnyV7Fbm6PkzK1TLuQ9oDu6/m6Q+/hSjf4VXPA1OcVA8DqZMF6IoeJoWRffTXzPOonNlpbHAZTqLP0NBcAZj0Uhm2COgfRTqwHLnVH9zVemviRGeufV6smbbZ9/lY5+AOT3GNC9V/5nECxI3rx6Iw/Zz1KOmv1OyaEogEbqdhAs1DwzgXaEjh5HtoLPGtDb30xpCimlID5b3C5V1rlwx+LLt5pPStHwpr3vpCjAiRXoNOl+v9i19cXbkPZ35 test-user@moon",
+			},
+		},
 	}
 
 	for _, tt := range tests {
