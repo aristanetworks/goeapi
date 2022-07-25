@@ -62,6 +62,7 @@ type Node struct {
 	startupConfig string
 	autoRefresh   bool
 	enablePasswd  string
+	versionNumber string
 }
 
 // GetConnection returns the EapiConnectionEntity
@@ -279,6 +280,31 @@ func (n *Node) ConfigWithErr(commands ...string) error {
 func (n *Node) Config(commands ...string) bool {
 	err := n.ConfigWithErr(commands...)
 	return (err == nil)
+}
+
+// Version returns the EOS version for this node
+func (n *Node) Version() string {
+	return n.versionNumber
+}
+
+// getVersionNumber is used to populate the versionNumber for this node. This
+// is called during the Connect.
+func (n *Node) getVersionNumber() error {
+	result, err := n.RunCommands([]string{"show version"}, "json")
+	if err != nil {
+		return fmt.Errorf("getVersionNumber: %v", err)
+	}
+	versionMap, found := result.Result[0]["version"]
+	if !found {
+		return fmt.Errorf("getVersionNumber: version not found")
+	}
+	version, ok := versionMap.(string)
+	if !ok {
+		return fmt.Errorf("getVersionNumber: Expect type 'string',  got '%T'",
+			versionMap)
+	}
+	n.versionNumber = version
+	return nil
 }
 
 // Enable issues an array of commands to the node in enable mode
@@ -683,6 +709,8 @@ func ConnectTo(name string) (*Node, error) {
 		return nil, err
 	}
 	node.EnableAuthentication(enablepwd)
+	// Populate the versionNumber for this node
+	node.getVersionNumber()
 	return node, nil
 }
 
@@ -713,7 +741,11 @@ func Connect(transport string, host string, username string, passwd string,
 	if err != nil {
 		return nil, err
 	}
-	return &Node{conn: conn, autoRefresh: true}, nil
+	node := &Node{conn: conn, autoRefresh: true}
+	// Populate the versionNumber for this node
+	node.getVersionNumber()
+
+	return node, nil
 }
 
 // Connection creates a connection using the supplied settings

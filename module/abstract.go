@@ -63,6 +63,13 @@ func (b *AbstractBaseEntity) Config() string {
 	return b.node.RunningConfig()
 }
 
+// Version returns the current running version
+// Returns:
+//      String: version
+func (b *AbstractBaseEntity) Version() string {
+	return b.node.Version()
+}
+
 // Error returns the current error exception
 // Returns:
 //      Error: current error
