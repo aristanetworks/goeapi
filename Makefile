@@ -1,6 +1,5 @@
 #
-GODEP := godep
-GO := $(GODEP) go
+GO := go
 GOTEST_FLAGS := -v
 TEST_TIMEOUT := 180s
 
