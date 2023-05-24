@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2015-2016, Arista Networks, Inc.
 // All rights reserved.
 //
@@ -6,16 +5,16 @@
 // modification, are permitted provided that the following conditions are
 // met:
 //
-//   * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the following disclaimer.
+//   - Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
 //
-//   * Redistributions in binary form must reproduce the above copyright
-//   notice, this list of conditions and the following disclaimer in the
-//   documentation and/or other materials provided with the distribution.
+//   - Redistributions in binary form must reproduce the above copyright
+//     notice, this list of conditions and the following disclaimer in the
+//     documentation and/or other materials provided with the distribution.
 //
-//   * Neither the name of Arista Networks nor the names of its
-//   contributors may be used to endorse or promote products derived from
-//   this software without specific prior written permission.
+//   - Neither the name of Arista Networks nor the names of its
+//     contributors may be used to endorse or promote products derived from
+//     this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 // "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -28,7 +27,6 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 // IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 package module
 
 import (
@@ -189,6 +187,18 @@ func TestUsersParseUsername_UnitTest(t *testing.T) {
 			},
 		},
 		{
+			"username test privilege 15 role network-admin secret *\n",
+			UserConfig{
+				"username":   "test",
+				"privilege":  "15",
+				"role":       "network-admin",
+				"nopassword": "false",
+				"format":     "*",
+				"secret":     "",
+				"sshkey":     "",
+			},
+		},
+		{
 			"username test1 privilege 1 secret 5 $1$o/po05ru$92uegC/GGu3i4MS7MH9AE0\n",
 			UserConfig{
 				"username":   "test1",
@@ -333,6 +343,7 @@ func TestUsersCreate_UnitTest(t *testing.T) {
 		{"tester", true, "", "", "username tester nopassword", true},
 		{"scooby", true, "", "", "username scooby nopassword", true},
 		{"co-op", true, "", "", "username co-op nopassword", true},
+		{"admin", false, "", "nologin", "username admin secret *", true},
 	}
 	for _, tt := range tests {
 		if ok, _ := user.Create(tt.name, tt.nopass, tt.secret, tt.enc); ok != tt.rc {
@@ -362,6 +373,7 @@ func TestUsersCreateWithSecret_UnitTest(t *testing.T) {
 		{"", "4password", "cleartext", "username  secret 0 4password", true},
 		{"scooby", "5password", "invalidType", "", false},
 		{"scooby", "5password", "", "", false},
+		{"admin", "", "nologin", "username admin secret *", true},
 	}
 	for _, tt := range tests {
 		if ok, _ := user.CreateWithSecret(tt.name, tt.secret, tt.enc); ok != tt.rc {
