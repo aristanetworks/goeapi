@@ -47,40 +47,38 @@ const defaultEncryption = "cleartext"
 var encryptionMap = map[string]string{
 	"cleartext": "0",
 	"md5":       "5",
+	"nologin":   "*",
 	"sha512":    "sha512",
 }
 
 var usersRegex = regexp.MustCompile(`(?m)username ([^\s]+) privilege (\d+)` +
 	`(?m)(?: role ([^\s]+))?` +
 	`(?m)(?: (nopassword))?` +
-	`(?m)(?: secret (0|5|7|sha512) (.+))?` +
+	`(?m)(?: secret (0|5|7|sha512|\*) (.+))?` +
 	`(?m).*$\n(?:username ([^\s]+) ssh-?key (.+)$)?`)
 
 // UserConfig represents a parsed user entry containing:
 //
-//      "username" : "",
-//     "privilege" : "",
-//          "role" : "",
-//    "nopassword" : "",
-//        "secret" : "",
-//        "format" : "",
-//        "sshkey" : "",
-//
-//
+//	  "username" : "",
+//	 "privilege" : "",
+//	      "role" : "",
+//	"nopassword" : "",
+//	    "secret" : "",
+//	    "format" : "",
+//	    "sshkey" : "",
 type UserConfig map[string]string
 
 // UserConfigMap is a mapped entry of UserConfigs containing:
 //
-//      "username" : {
-//            "username" : "",
-//           "privilege" : "",
-//                "role" : "",
-//          "nopassword" : "",
-//              "secret" : "",
-//              "format" : "",
-//              "sshkey" : "",
-//      }
-//
+//	"username" : {
+//	      "username" : "",
+//	     "privilege" : "",
+//	          "role" : "",
+//	    "nopassword" : "",
+//	        "secret" : "",
+//	        "format" : "",
+//	        "sshkey" : "",
+//	}
 type UserConfigMap map[string]UserConfig
 
 // UserName returns the username(string) entry for
@@ -160,11 +158,13 @@ func (u UserConfig) isEqual(dest UserConfig) bool {
 // Get Returns the local user configuration as a UserConfig.
 //
 // Args:
-//  name (string): The user name to return a resource for from the
-//                nodes configuration
+//
+//	name (string): The user name to return a resource for from the
+//	              nodes configuration
 //
 // Returns:
-//  UserConfig type
+//
+//	UserConfig type
 func (u *UserEntity) Get(name string) UserConfig {
 	resource, found := u.GetAll()[name]
 	if !found {
@@ -176,7 +176,8 @@ func (u *UserEntity) Get(name string) UserConfig {
 // GetAll Returns the local user configuration as UserConfig
 //
 // Returns:
-//  UserConfigMap object
+//
+//	UserConfigMap object
 func (u *UserEntity) GetAll() UserConfigMap {
 	var resources = make(UserConfigMap)
 
@@ -196,7 +197,8 @@ func (u *UserEntity) GetAll() UserConfigMap {
 // GetSection Returns the local user configuration as string
 //
 // Returns:
-//  UserConfigMap object
+//
+//	UserConfigMap object
 func (u *UserEntity) GetSection() string {
 
 	config := u.Config()
@@ -208,15 +210,17 @@ func (u *UserEntity) GetSection() string {
 // as a UserConfig object
 //
 // Args:
-//  config (string): The config block to parse
+//
+//	config (string): The config block to parse
 //
 // Returns:
-//  UserConfig object
+//
+//	UserConfig object
 func parseUsername(config string) UserConfig {
 	var re = regexp.MustCompile(`(?m)username ([^\s]+) privilege (\d+)` +
 		`(?: role ([^\s]+))?` +
 		`(?: (nopassword))?` +
-		`(?: secret (0|5|7|sha512) (.+))?` +
+		`(?: secret (0|5|7|sha512|\*)\s*(.*))?` +
 		`.*$\n(?:username ([^\s]+) ssh-?key (.+)$)?`)
 
 	var resource = make(UserConfig)
@@ -237,27 +241,27 @@ func parseUsername(config string) UserConfig {
 	resource["secret"] = match[6]
 	resource["sshkey"] = match[8]
 
-	//for idx, val := range match {
-	//    fmt.Printf("val[%d]: %s\n", idx, val)
-	//}
 	return resource
 }
 
-//Create Creates a new user on the local system.
+// Create Creates a new user on the local system.
 //
 // Args:
-//  name (string):     The name of the user to craete
-//  nopassword (bool): Configures the user to be able to authenticate
-//                     without a password challenage
-//  secret (string):   The secret (password) to assign to this user
-//  encryption (string): Specifies how the secret is encoded.  Valid
-//                           values are "cleartext", "md5", "sha512".
-//                           The default is "cleartext"
+//
+//	name (string):     The name of the user to craete
+//	nopassword (bool): Configures the user to be able to authenticate
+//	                   without a password challenage
+//	secret (string):   The secret (password) to assign to this user
+//	encryption (string): Specifies how the secret is encoded.  Valid
+//	                         values are "cleartext", "md5", "sha512".
+//	                         The default is "cleartext"
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) Create(name string, nopassword bool, secret string,
 	encryption string) (bool, error) {
-	if secret != "" {
+	if secret != "" || encryption == "nologin" {
 		return u.CreateWithSecret(name, secret, encryption)
 	} else if nopassword {
 		return u.CreateWithNoPassword(name), nil
@@ -270,13 +274,16 @@ func (u *UserEntity) Create(name string, nopassword bool, secret string,
 // CreateWithSecret Creates a new user on the local node
 //
 // Args:
-//  name (string):       The name of the user to craete
-//  secret (string):     The secret (password) to assign to this user
-//  encryption (string): Specifies how the secret is encoded.  Valid
-//                      values are "cleartext", "md5", "sha512".  The
-//                      default is "cleartext"
+//
+//	name (string):       The name of the user to craete
+//	secret (string):     The secret (password) to assign to this user
+//	encryption (string): Specifies how the secret is encoded.  Valid
+//	                     values are "cleartext", "md5", "nologin", "sha512".
+//	                     The default is "cleartext"
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) CreateWithSecret(name string, secret string,
 	encryption string) (bool, error) {
 	var enc string
@@ -284,18 +291,25 @@ func (u *UserEntity) CreateWithSecret(name string, secret string,
 	enc, found := encryptionMap[encryption]
 	if !found {
 		return false, fmt.Errorf("encryption must be one of \"cleartext\", " +
-			"\"md5\" or \"sha512\"")
+			"\"md5\", \"nologin\" or \"sha512\"")
 	}
-	cmd := "username " + name + " secret " + enc + " " + secret
+
+	cmd := "username " + name + " secret " + enc
+	if encryption != "nologin" {
+		cmd += " " + secret
+	}
 	return u.Configure(cmd), nil
 }
 
 // CreateWithNoPassword Creates a new user on the local node
 //
 // Args:
-//  name (string): The name of the user to create
+//
+//	name (string): The name of the user to create
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) CreateWithNoPassword(name string) bool {
 	var cmd = "username " + name + " nopassword"
 	return u.Configure(cmd)
@@ -304,9 +318,12 @@ func (u *UserEntity) CreateWithNoPassword(name string) bool {
 // Delete Deletes the local username from the config
 //
 // Args:
-//  name (string): The name of the user to delete
+//
+//	name (string): The name of the user to delete
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) Delete(name string) bool {
 	var cmd = "no username " + name
 	return u.Configure(cmd)
@@ -315,9 +332,12 @@ func (u *UserEntity) Delete(name string) bool {
 // Default Configures the local username using the default keyword
 //
 // Args:
-//  name (string): The name of the user to configure
+//
+//	name (string): The name of the user to configure
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) Default(name string) bool {
 	var cmd = "default username " + name
 	return u.Configure(cmd)
@@ -326,11 +346,14 @@ func (u *UserEntity) Default(name string) bool {
 // SetPrivilege Configures the user privilege value in EOS
 //
 // Args:
-//  name (string): The name of the user to craete
-//  value (int):   The privilege value to assign to the user.  Valid
-//                 values are in the range of 0 to 15
+//
+//	name (string): The name of the user to craete
+//	value (int):   The privilege value to assign to the user.  Valid
+//	               values are in the range of 0 to 15
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) SetPrivilege(name string, value int) (bool, error) {
 	if !isPrivilege(value) {
 		return false, fmt.Errorf("priviledge value must be between 0 and 15")
@@ -342,10 +365,13 @@ func (u *UserEntity) SetPrivilege(name string, value int) (bool, error) {
 // SetRole Configures the user role vale in EOS
 //
 // Args:
-//  name (string):  The name of the user to craete
-//  value (string): The value to configure for the user role
+//
+//	name (string):  The name of the user to craete
+//	value (string): The value to configure for the user role
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) SetRole(name string, value string) bool {
 	var cmd = "username " + name
 	if value != "" {
@@ -359,10 +385,13 @@ func (u *UserEntity) SetRole(name string, value string) bool {
 // SetSshkey Configures the user sshkey
 //
 // Args:
-//  name (string):  The name of the user to add the sshkey to
-//  value (string): The value to configure for the sshkey.
+//
+//	name (string):  The name of the user to add the sshkey to
+//	value (string): The value to configure for the sshkey.
+//
 // Returns:
-//  True if the operation was successful otherwise False
+//
+//	True if the operation was successful otherwise False
 func (u *UserEntity) SetSshkey(name string, value string) bool {
 	versionRegex := regexp.MustCompile(`\d.\d+`)
 	versionNumber := versionRegex.FindString(u.Version())
