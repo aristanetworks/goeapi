@@ -63,7 +63,7 @@ type Node struct {
 	autoRefresh   bool
 	enablePasswd  string
 	versionNumber string
-	eAPIVersion	  string
+	eAPIVersion   string
 }
 
 // GetConnection returns the EapiConnectionEntity
