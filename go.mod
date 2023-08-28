@@ -1,4 +1,4 @@
-module github.com/aristanetworks/goeapi
+module github.com/kalebris/goeapi-version-parm
 
 go 1.17
 
