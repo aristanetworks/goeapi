@@ -55,8 +55,10 @@ type Request struct {
 }
 
 // Parameters ...
+type StringOrInt interface{}
+
 type Parameters struct {
-	Version int           `json:"version"`
+	Version StringOrInt   `json:"version"`
 	Cmds    []interface{} `json:"cmds"`
 	Format  string        `json:"format"`
 }
@@ -107,6 +109,7 @@ type EapiReqHandle struct {
 	encoding     string
 	eapiCommands []commandBlock
 	err          error
+	version		 StringOrInt
 }
 
 // debugJSON prints out []byte JSON data Indented
@@ -250,7 +253,7 @@ func (handle *EapiReqHandle) Call() error {
 
 	commands := handle.getAllCommands()
 
-	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding)
+	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding, handle.version)
         
 	if err != nil {
 		return err
