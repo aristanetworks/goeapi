@@ -1,3 +1,5 @@
+github.com/aristanetworks/goeapi v1.0.0 h1:FjckkjOY32SkmKrqDyBqYu6hN7DaIJuxcii9LLdZqtQ=
+github.com/aristanetworks/goeapi v1.0.0/go.mod h1:DcgIvssM+qcRRVICDky/ecT/Gqpx40UQDTYY8Lu/iJ0=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/vaughan0/go-ini v0.0.0-20130923145212-a98ad7ee00ec h1:DGmKwyZwEB8dI7tbLt/I/gQuP559o/0FrAkHKlQM/Ks=
