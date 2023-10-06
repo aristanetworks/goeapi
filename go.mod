@@ -1,4 +1,4 @@
-module github.com/kalebris/goeapi-version-parm
+module github.com/kalebris/goeapi
 
 go 1.17
 
