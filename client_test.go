@@ -33,6 +33,7 @@ package goeapi
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"os/user"
 	"regexp"
@@ -460,8 +461,14 @@ func TestClientConnectInvalidTransport_UnitTest(t *testing.T) {
 }
 
 func TestClientConnectTimeout_UnitTest(t *testing.T) {
-	// 1.1.1.2 is assumed to be an unreachable bogus address
-	node, err := Connect("http", "1.1.1.2", "admin", "admin", 80)
+	// We create a local socket that never gives any responses
+	// We assume that 127.0.0.1 exists as the loopback on the test host.
+	sock, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal("Error in test setup (listen).")
+	}
+	port := sock.Addr().(*net.TCPAddr).Port
+	node, err := Connect("http", "127.0.0.1", "admin", "admin", port)
 	if err != nil {
 		t.Fatal("Error in connect.")
 	}
@@ -470,6 +477,7 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	if _, err = node.getConfigText("running-config", "all"); err == nil {
 		t.Fatal("Should timeout and return error")
 	}
+	sock.Close()
 }
 
 func TestClientConnectDefaultPort_UnitTest(t *testing.T) {
