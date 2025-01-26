@@ -467,6 +467,7 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error in test setup (listen).")
 	}
+	defer sock.Close()
 	port := sock.Addr().(*net.TCPAddr).Port
 	node, err := Connect("http", "127.0.0.1", "admin", "admin", port)
 	if err != nil {
@@ -477,7 +478,6 @@ func TestClientConnectTimeout_UnitTest(t *testing.T) {
 	if _, err = node.getConfigText("running-config", "all"); err == nil {
 		t.Fatal("Should timeout and return error")
 	}
-	sock.Close()
 }
 
 func TestClientConnectDefaultPort_UnitTest(t *testing.T) {
