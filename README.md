@@ -10,6 +10,7 @@
 4. [Getting Started](#getting-started)
     * [Example eapi.conf File](#example-eapiconf-file)
     * [Using goeapi](#using-goeapi)
+    * [Others Ways of Executing a Command](#others-ways-of-executing-a-command)
 5. [Building Local Documentation](#building-documention)
 6. [Testing](#testing)
 7. [Contributing](#contributing)
@@ -25,11 +26,13 @@ The goeapi implemenation also provides an API layer for building native Go objec
 The libray is freely provided to the open source community for building robust applications using Arista EOS eAPI.  Support is provided as best effort through Github iusses.
 
 ## Requirements
+
 * Arista EOS v4.12 or later
 * Arista eAPI enabled for either http or https
 * Go 1.5+
 
 ## Installation
+
 First, it is assumed you have and are working in a standard [Go](https://www.golang.org) workspace, as described in http://golang.org/doc/code.html, with proper [GOPATH](https://golang.org/doc/code.html#GOPATH) set. Go 1.5+ is what's recommended for using goeapi. To download and install goeapi:
 
 ```console
@@ -43,43 +46,45 @@ $ make bootstrap
 ```
 
 # Upgrading
-  ```
-  $ go get -u github.com/aristanetworks/goeapi
-  ```
+
+```
+$ go get -u github.com/aristanetworks/goeapi
+```
 
 # Getting Started
+
 The following steps need to be followed to assure successful configuration of goeapi.
 
 1. EOS Command API must be enabled
 
-    To enable EOS Command API from configuration mode, configure proper protocol under management api, and
-    then verify:
-    ```
-        Switch# configure terminal
-        Switch(config)# management api http-commands
-        Switch(config-mgmt-api-http-cmds)# protocol ?
-          http         Configure HTTP server options
-          https        Configure HTTPS server options
-          unix-socket  Configure Unix Domain Socket
-        Switch(config-mgmt-api-http-cmds)# protocol http
-        Switch(config-mgmt-api-http-cmds)# end
+To enable EOS Command API from configuration mode, configure proper protocol under management api, and then verify:
+```
+Switch# configure terminal
+Switch(config)# management api http-commands
+Switch(config-mgmt-api-http-cmds)# protocol ?
+  http         Configure HTTP server options
+  https        Configure HTTPS server options
+  unix-socket  Configure Unix Domain Socket
+Switch(config-mgmt-api-http-cmds)# protocol http
+Switch(config-mgmt-api-http-cmds)# end
 
-        Switch# show management api http-commands
-        Enabled:            Yes
-        HTTPS server:       running, set to use port 443
-        HTTP server:        running, set to use port 80
-        Local HTTP server:  shutdown, no authentication, set to use port 8080
-        Unix Socket server: shutdown, no authentication
-        ...
+Switch# show management api http-commands
+Enabled:            Yes
+HTTPS server:       running, set to use port 443
+HTTP server:        running, set to use port 80
+Local HTTP server:  shutdown, no authentication, set to use port 8080
+Unix Socket server: shutdown, no authentication
+...
 ```
 
 2. Create configuration file with proper node properties. (*See eapi.conf file examples below*)
 
-    **Note:** The default search path for the conf file is ``~/.eapi.conf``
-    followed by ``/mnt/flash/eapi.conf``.   This can be overridden by setting
-    ``EAPI_CONF=<path file conf file>`` in your environment.
+**Note:** The default search path for the conf file is ``~/.eapi.conf``
+followed by ``/mnt/flash/eapi.conf``.   This can be overridden by setting
+``EAPI_CONF=<path file conf file>`` in your environment.
 
 ## Example eapi.conf File
+
 Below is an example of an eAPI conf file.  The conf file can contain more than
 one node.  Each node section must be prefaced by **connection:\<name\>** where
 \<name\> is the name of the connection.
@@ -99,6 +104,7 @@ The following configuration options are available for defining node entries:
 _Note:_ See the EOS User Manual found at arista.com for more details on configuring eAPI values.
 
 # Using Goeapi
+
 Once goeapi has been installed and your .eapi.config file is setup correctly, you are now ready to try it out. Here is a working example of .eapi.config file and go program:
 
 ```sh
@@ -115,6 +121,7 @@ transport=https
 ```sh
 $ cat example1.go
 ```
+
 ```go
 package main
 
@@ -146,8 +153,10 @@ func main() {
         fmt.Printf("\nSysinfo: %#v\n", sysInfo.HostName())
 }
 ```
+
 goeapi provides a way for users to directly couple a command with a predefined response. The underlying api will issue the command and the response stored in the defined type. For example, lets say the configured vlan ports are needed for some form of processing. If we know the JSON response for the command composed like the following:
 (from Arista Command API Explorer):
+
 ```json
  {
     "jsonrpc": "2.0",
@@ -180,7 +189,9 @@ goeapi provides a way for users to directly couple a command with a predefined r
     "id": "CapiExplorer-123"
  }
 ```
+
 We can then build our Go structures based on the response format and couple our show command with the type:
+
 ```go
 type MyShowVlan struct {
         SourceDetail string          `json:"sourceDetail"`
@@ -203,7 +214,9 @@ func (s *MyShowVlan) GetCmd() string {
         return "show vlan configured-ports"
 }
 ```
+
 Since the command ``show vlan configured-ports`` is coupled with the response structure, the underlying api knows to issue the command and the response needs to be filled in. The resulting code looks like:
+
 ```go
 package main
 
@@ -255,7 +268,9 @@ func main() {
         }
 }
 ```
+
 Also, if several commands/responses have been defined, goeapi supports command stacking to batch issue all at once:
+
 ```go
     ...
 	handle, _ := node.GetHandle("json")
@@ -271,6 +286,83 @@ Also, if several commands/responses have been defined, goeapi supports command s
     ...
 ```
 There are several go example's using goeapi (as well as example .eapi.config file) provided in the examples directory.
+
+## Others Ways of Executing a Command
+
+### Key, Value Pair
+
+In the below code snippet, we got switchports information and printing key, value pair by looping the map:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/aristanetworks/goeapi"
+	"github.com/aristanetworks/goeapi/module"
+)
+
+func main() {
+	node, err := goeapi.ConnectTo("dut")
+	if err != nil {
+		panic(err)
+	}
+
+	// To get switchports
+	var sv module.ShowInterfacesSwitchport
+	handle, _ := node.GetHandle("json")
+	handle.AddCommand(&sv)
+	handle.Call()
+
+	for k, v := range sv.Switchports {
+		fmt.Printf("Interface: %s, Mode: %s \n", k, v.SwitchportInfo.Mode)
+	}
+}
+```
+
+### Executing a Command or List of Commands
+
+If we want to execute a list of commands,
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/aristanetworks/goeapi"
+	"github.com/aristanetworks/goeapi/module"
+	"github.com/mitchellh/mapstructure"
+)
+
+func main() {
+	cmds := []string{"show version", "show interfaces et1", "show interfaces"}
+	node, err := goeapi.ConnectTo("dut")
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := node.RunCommands(cmds, "json")
+	if err != nil {
+		panic(err)
+	}
+
+	// To get Version
+	var sv module.ShowVersion
+	mapstructure.Decode(res.Result[0], &sv)
+	fmt.Println("Version: ", sv.Version)
+
+	// To get the status of the Interface Ethernet1
+	var switchportEt1 module.InterfaceConfig
+	if ethernet1, ok := res.Result[1]["interfaces"].(map[string]interface{})["Ethernet1"].(map[string]interface{}); ok {
+		mapstructure.Decode(ethernet1, &switchportEt1)
+	}
+	fmt.Println("Interface Ethernet1 Status: ", switchportEt1["interfaceStatus"])
+}
+```
+
+We can make use of `RunCommands` method from the `Node` object. Additionally `Decode` function has been used from `mapstructure` package for decoding the JSON response.
 
 # Building Local Documentation
 
@@ -318,7 +410,7 @@ Any tests written must conform to this standard.
 
 Contributing pull requests are gladly welcomed for this repository.  Please
 note that all contributions that modify the library behavior require
-corresponding test cases otherwise the pull request will be rejected.
+corresponding test cases otherwise the pull request will be rejected. More information [here](./CONTRIBUTING.md).
 
 # License
 
