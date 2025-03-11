@@ -183,7 +183,7 @@ func TestParse_UnitTest(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testConfig := fmt.Sprintf(shortConfig)
+		testConfig := fmt.Sprintf("%v", shortConfig)
 		if got := p.parse(testConfig, tt.in); got != tt.want {
 			t.Fatalf("parse(config, %s) = %v; want %v", tt.in, got, tt.want)
 		}
