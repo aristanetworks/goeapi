@@ -535,8 +535,18 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 	}
 	timeOut := time.Duration(time.Duration(conn.timeOut) * time.Second)
 	url := conn.getURL()
+	suites := []uint16{}
+	for _, suite := range tls.CipherSuites() {
+		suites = append(suites, suite.ID)
+	}
+	for _, suite := range tls.InsecureCipherSuites() {
+		suites = append(suites, suite.ID)
+	}
 	tr := &http.Transport{
-		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			CipherSuites:       suites,
+		},
 		DisableKeepAlives: conn.disableKeepAlive,
 	}
 	client := &http.Client{
