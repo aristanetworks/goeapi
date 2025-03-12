@@ -11,6 +11,7 @@
     * [Example eapi.conf File](#example-eapiconf-file)
     * [Using goeapi](#using-goeapi)
     * [Others Ways of Executing a Command](#others-ways-of-executing-a-command)
+    * [Certificate-based Authentication](#certificate-based-authentication)
 5. [Building Local Documentation](#building-documention)
 6. [Testing](#testing)
 7. [Contributing](#contributing)
@@ -98,8 +99,11 @@ The following configuration options are available for defining node entries:
 * **transport** - Configures the type of transport connection to use.  The default value is _https_.  Valid values are:
   * http
   * https
+  * https_certs
   * socket
 * **port** - Configures the port to use for the eAPI connection. (Currently Not Implemented)
+* **keyfile** - The path to the client's private key file (only required for https_certs connections)
+* **certfile** - The path to the client's certificate file (only required for https_certs connections)
 
 _Note:_ See the EOS User Manual found at arista.com for more details on configuring eAPI values.
 
@@ -363,6 +367,18 @@ func main() {
 ```
 
 We can make use of `RunCommands` method from the `Node` object. Additionally `Decode` function has been used from `mapstructure` package for decoding the JSON response.
+
+## Certificate-based Authentication
+
+Goeapi supports certificate-based authentication for eAPI connections, eliminating the need for a username and password. Below is the example `~/.eapi.conf`,
+
+```
+[connection:dut]
+host=dut
+keyfile=/path/to/keyfile
+certfile=/path/to/certificatefile
+transport=https_certs
+```
 
 # Building Local Documentation
 
