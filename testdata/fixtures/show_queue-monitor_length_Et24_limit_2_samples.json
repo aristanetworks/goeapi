@@ -1,0 +1,110 @@
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "result": [
+    {},
+    {
+    "reportTime": 1568892561.551359,
+    "bytesPerTxmpSegment": 512,
+    "globalHitCount": 0,
+    "lanzEnabled": true,
+    "platformName": "Sand",
+    "entryList": [
+        {
+            "entryTimeUsecs": 1568892560445182,
+            "globalProtectionModeEnabled": true,
+            "entryTime": 1568892560.445182,
+            "ingressPortSet": [
+                "Ethernet4/1",
+                "Ethernet8/1",
+                "Ethernet26/1",
+                "Ethernet30/1",
+                "Ethernet10/1",
+                "Ethernet25/1",
+                "Ethernet5/1",
+                "Ethernet9/1",
+                "Ethernet3/1"
+            ],
+            "interface": "Ethernet24",
+            "duration": 1,
+            "durationUsecs": 1000000,
+            "entryType": "P",
+            "queueLength": 73520,
+            "trafficClass": 2
+        },
+        {
+            "entryTimeUsecs": 1568892557441976,
+            "globalProtectionModeEnabled": true,
+            "entryTime": 1568892557.441976,
+            "ingressPortSet": [
+                "Ethernet24/3",
+                "Ethernet13/1",
+                "Ethernet35/1",
+                "Ethernet23/1",
+                "Ethernet33/1",
+                "Ethernet19/1",
+                "Ethernet14/1",
+                "Ethernet18/1",
+                "Ethernet24/1",
+                "Ethernet34/1",
+                "Ethernet24/4",
+                "Ethernet24/2"
+            ],
+            "interface": "Ethernet24",
+            "duration": 4,
+            "durationUsecs": 4004448,
+            "entryType": "P",
+            "queueLength": 489744,
+            "trafficClass": 0
+        },
+        {
+            "entryTimeUsecs": 1568892549432686,
+            "globalProtectionModeEnabled": true,
+            "entryTime": 1568892549.432686,
+            "ingressPortSet": [
+                "Ethernet4/1",
+                "Ethernet8/1",
+                "Ethernet26/1",
+                "Ethernet30/1",
+                "Ethernet10/1",
+                "Ethernet25/1",
+                "Ethernet5/1",
+                "Ethernet9/1",
+                "Ethernet3/1"
+            ],
+            "interface": "Ethernet24",
+            "duration": 1,
+            "durationUsecs": 1000000,
+            "entryType": "P",
+            "queueLength": 46384,
+            "trafficClass": 2
+        },
+        {
+            "entryTimeUsecs": 1568892541423988,
+            "globalProtectionModeEnabled": true,
+            "entryTime": 1568892541.423988,
+            "ingressPortSet": [
+                "Ethernet24/3",
+                "Ethernet13/1",
+                "Ethernet35/1",
+                "Ethernet23/1",
+                "Ethernet33/1",
+                "Ethernet19/1",
+                "Ethernet14/1",
+                "Ethernet18/1",
+                "Ethernet24/1",
+                "Ethernet34/1",
+                "Ethernet24/4",
+                "Ethernet24/2"
+            ],
+            "interface": "Ethernet24",
+            "duration": 1,
+            "durationUsecs": 1000000,
+            "entryType": "P",
+            "queueLength": 247568,
+            "trafficClass": 0
+        }
+      ]
+    }
+  ]
+}
