@@ -44,7 +44,6 @@ import (
 	"github.com/vaughan0/go-ini"
 )
 
-//
 const (
 	RunningConfig = "running-config"
 	StartupConfig = "startup-config"
@@ -69,7 +68,8 @@ type Node struct {
 // associtated with this Node.
 //
 // Returns:
-//  EapiConnectionEntity
+//
+//	EapiConnectionEntity
 func (n *Node) GetConnection() EapiConnectionEntity {
 	if n == nil {
 		return nil
@@ -92,9 +92,10 @@ func (n *Node) SetConnection(c EapiConnectionEntity) {
 // true or false.
 //
 // Args:
-//  val (bool): If True, the running-config and startup-config are
-//              refreshed on config events.  If False, then the config
-//              properties must be manually refreshed.
+//
+//	val (bool): If True, the running-config and startup-config are
+//	            refreshed on config events.  If False, then the config
+//	            properties must be manually refreshed.
 func (n *Node) SetAutoRefresh(val bool) {
 	n.autoRefresh = val
 }
@@ -103,8 +104,9 @@ func (n *Node) SetAutoRefresh(val bool) {
 // password present in passwd
 //
 // Args:
-//  passwd (string): The password string in clear text used to
-//                   authenticate to exec mode
+//
+//	passwd (string): The password string in clear text used to
+//	                 authenticate to exec mode
 func (n *Node) EnableAuthentication(passwd string) {
 	n.enablePasswd = strings.TrimSpace(passwd)
 }
@@ -113,7 +115,8 @@ func (n *Node) EnableAuthentication(passwd string) {
 // device. A copy is cached locally if one does not already exist.
 //
 // Returns:
-//  String format of the running config
+//
+//	String format of the running config
 func (n *Node) RunningConfig() string {
 	if n.runningConfig != "" {
 		return n.runningConfig
@@ -126,7 +129,8 @@ func (n *Node) RunningConfig() string {
 // device. A copy is cached locally if one does not already exist.
 //
 // Returns:
-//  String format of the startup config
+//
+//	String format of the startup config
 func (n *Node) StartupConfig() string {
 	if n.startupConfig != "" {
 		return n.startupConfig
@@ -149,11 +153,13 @@ func (n *Node) Refresh() {
 // GetHandle returns the EapiReqHandle for the connection.
 //
 // Args:
-//  n (*Node): Node for which we are aquiring an EapiReqHandle
-//  encoding (string): Encoding to be used
+//
+//	n (*Node): Node for which we are aquiring an EapiReqHandle
+//	encoding (string): Encoding to be used
 //
 // Returns:
-//  Pointer to an EapiReqHandle or error on failure
+//
+//	Pointer to an EapiReqHandle or error on failure
 func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
 	if strings.ToLower(encoding) != "json" &&
 		strings.ToLower(encoding) != "text" {
@@ -168,10 +174,12 @@ func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
 // GetHandle returns the EapiReqHandle for the connection.
 //
 // Args:
-//  encoding (string): Encoding to be used
+//
+//	encoding (string): Encoding to be used
 //
 // Returns:
-//  Pointer to an EapiReqHandle or error on failure
+//
+//	Pointer to an EapiReqHandle or error on failure
 func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 	return GetHandle(n, encoding)
 }
@@ -183,13 +191,16 @@ func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
 // invalid parameter or if the underlying transmit failed.
 //
 // Args:
-//  config (string): Specifies to return either the nodes startup-config
-//                or running-config.  The default value is the running-config
-//  params (string): A string of keywords to append to the command for
-//                retrieving the config.
-//  encoding (string): Encoding to be used
+//
+//	config (string): Specifies to return either the nodes startup-config
+//	              or running-config.  The default value is the running-config
+//	params (string): A string of keywords to append to the command for
+//	              retrieving the config.
+//	encoding (string): Encoding to be used
+//
 // Returns:
-//  Will return the config requested or error if failure
+//
+//	Will return the config requested or error if failure
 func (n *Node) GetConfig(config, params, encoding string) (map[string]interface{}, error) {
 	if config != RunningConfig && config != StartupConfig {
 		return nil, fmt.Errorf("Invalid config type: %s", config)
@@ -214,12 +225,14 @@ func (n *Node) getConfigText(config, params string) (string, error) {
 // GetSection retrieves the config section from the Node
 //
 // Args:
-//  regex (string):
-//  config (string):
+//
+//	regex (string):
+//	config (string):
 //
 // Returns:
-//  String value of the config section requested.
-//  Error returned on failure.
+//
+//	String value of the config section requested.
+//	Error returned on failure.
 func (n *Node) GetSection(regex string, config string) (string, error) {
 	var params string
 	if config == "" || config == RunningConfig {
@@ -315,10 +328,13 @@ func (n *Node) getVersionNumber() error {
 // encoding.
 //
 // Args:
-//  commands (string array): The list of commands to send to the node
+//
+//	commands (string array): The list of commands to send to the node
+//
 // Returns:
-//  An array of map'd interfaces that includes the response for each
-//  command along with the encoding. Error is returned on failure.
+//
+//	An array of map'd interfaces that includes the response for each
+//	command along with the encoding. Error is returned on failure.
 func (n *Node) Enable(commands []string) ([]map[string]string, error) {
 	for _, cmd := range commands {
 		found, _ := regexp.MatchString(`^\s*configure(\s+terminal)?\s*$`, cmd)
@@ -347,14 +363,16 @@ func (n *Node) Enable(commands []string) ([]map[string]string, error) {
 // need to be used, prefering instead to use config() or enable().
 //
 // Args:
-//  commands (array): The ordered list of commands to send to the
-//                   device using the transport
-//  encoding (string): The encoding method to use for the request and
-//                  excpected response. ('json' or 'text')
+//
+//	commands (array): The ordered list of commands to send to the
+//	                 device using the transport
+//	encoding (string): The encoding method to use for the request and
+//	                excpected response. ('json' or 'text')
 //
 // Returns:
-//  This method will return the raw response from the connection
-//  which is a JSONRPCResponse object or error on failure.
+//
+//	This method will return the raw response from the connection
+//	which is a JSONRPCResponse object or error on failure.
 func (n *Node) RunCommands(commands []string,
 	encoding string) (*JSONRPCResponse, error) {
 	var cmds []interface{}
@@ -387,10 +405,12 @@ func (n *Node) RunCommands(commands []string,
 // map[string]interface {"cmd":"enable","info":enablePasswd}
 //
 // Args:
-//  commands (string array): list of commands to convert
+//
+//	commands (string array): list of commands to convert
 //
 // Returns:
-//  An array of []interface{} if successful.
+//
+//	An array of []interface{} if successful.
 func (n *Node) prependEnableSequence(commands []string) []interface{} {
 	length := len(commands) + 1
 
@@ -411,10 +431,12 @@ func (n *Node) prependEnableSequence(commands []string) []interface{} {
 // of strings (commands) to an array of interfaces.
 //
 // Args:
-//  commands (string array): list of commands
+//
+//	commands (string array): list of commands
 //
 // Returns:
-//  Interface array of converted commands
+//
+//	Interface array of converted commands
 func cmdsToInterface(commands []string) []interface{} {
 	if commands == nil || len(commands) == 0 {
 		return nil
@@ -443,10 +465,11 @@ type fn func(transport string, host string, username string,
 
 // transports provides the method
 var transports = map[string]fn{
-	"socket":     NewSocketEapiConnection,
-	"http_local": NewHTTPLocalEapiConnection,
-	"http":       NewHTTPEapiConnection,
-	"https":      NewHTTPSEapiConnection,
+	"socket":      NewSocketEapiConnection,
+	"http_local":  NewHTTPLocalEapiConnection,
+	"http":        NewHTTPEapiConnection,
+	"https":       NewHTTPSEapiConnection,
+	"https_certs": NewHTTPSCertsEapiConnection,
 }
 
 // EapiConfig provides the instance for managing of eapi.conf file.
@@ -470,7 +493,8 @@ func NewEapiConfig() *EapiConfig {
 // initiates the autoload for the config file.
 //
 // Args:
-//  filename (string): filename/path of the eapi.conf file.
+//
+//	filename (string): filename/path of the eapi.conf file.
 func NewEapiConfigFile(filename string) *EapiConfig {
 	config := &EapiConfig{filename: filename}
 	config.AutoLoad()
@@ -539,7 +563,8 @@ func Connections() []string {
 // the instance object.  It will also add the default connection localhost
 // if it was not defined in the eapi.conf file
 // Args:
-//  filename (string): The full path to the file to load
+//
+//	filename (string): The full path to the file to load
 func (e *EapiConfig) Read(filename string) error {
 	file, err := ini.LoadFile(filename)
 	if err != nil {
@@ -563,9 +588,12 @@ func (e *EapiConfig) Read(filename string) error {
 // file specified by filename.
 //
 // Args:
-//  filename (string): The full path to the file to be loaded
+//
+//	filename (string): The full path to the file to be loaded
+//
 // Returns:
-//  bool: True if successful
+//
+//	bool: True if successful
 func (e *EapiConfig) Load(filename string) bool {
 	e.filename = filename
 	e.Reload()
@@ -579,7 +607,8 @@ func (e *EapiConfig) Load(filename string) bool {
 // configuration and reload all entries.
 //
 // Returns:
-//  bool: True if successful
+//
+//	bool: True if successful
 func (e *EapiConfig) Reload() bool {
 	for name := range e.File {
 		delete(e.File, name)
@@ -593,20 +622,22 @@ func (e *EapiConfig) Reload() bool {
 // This method will return the settings for the configuration specified
 // by name.  Note that the name argument should only be the name.
 //
-// For instance, give the following eapi.conf file
+// # For instance, give the following eapi.conf file
 //
 // .. code-block:: ini
 //
-//  [connection:veos01]
-//  transport: http
+//	[connection:veos01]
+//	transport: http
 //
 // Args:
-//  name (string): The name of the connection to return
+//
+//	name (string): The name of the connection to return
 //
 // Returns:
-//  ini.Section object of key/value pairs that represent
-//  the node configuration.  If the name provided in the argument
-//  is not found, then nil is returned.
+//
+//	ini.Section object of key/value pairs that represent
+//	the node configuration.  If the name provided in the argument
+//	is not found, then nil is returned.
 func (e *EapiConfig) GetConnection(name string) ini.Section {
 	name = "connection:" + name
 	section, found := e.File[name]
@@ -623,15 +654,19 @@ func (e *EapiConfig) GetConnection(name string) ini.Section {
 // persisted.
 //
 // Note:
-//  If a call is made to load() or reload(), any connections added
-//  with this method must be re-added to the config instance
+//
+//	If a call is made to load() or reload(), any connections added
+//	with this method must be re-added to the config instance
 //
 // Args:
-//  name (string): The name of the connection to add to the config.  The
-//              name provided will automatically be prepended with the string
-//              connection:
+//
+//	name (string): The name of the connection to add to the config.  The
+//	            name provided will automatically be prepended with the string
+//	            connection:
+//
 // Returns:
-//  bool: True if successful
+//
+//	bool: True if successful
 func (e *EapiConfig) AddConnection(name string) ini.Section {
 	return e.Section("connection:" + name)
 }
@@ -654,8 +689,9 @@ func (e *EapiConfig) addDefaultConnection() {
 // instance.   Its a convenience function that calls load on the config
 // instance
 //
-//Args:
-//  filename (string): The full path to the filename to load
+// Args:
+//
+//	filename (string): The full path to the filename to load
 func LoadConfig(filename string) {
 	configGlobal.Load(filename)
 }
@@ -667,11 +703,14 @@ func LoadConfig(filename string) {
 // on the global config instance
 //
 // Args:
-//  name (string): The name of the connection to return.  The connection
-//              name is specified as the string right of the : in the INI file
+//
+//	name (string): The name of the connection to return.  The connection
+//	            name is specified as the string right of the : in the INI file
+//
 // Returns:
-//  An ini.Section object of key/value pairs that represent the
-//  nodes configuration settings from the config instance
+//
+//	An ini.Section object of key/value pairs that represent the
+//	nodes configuration settings from the config instance
 func ConfigFor(name string) ini.Section {
 	return configGlobal.GetConnection(name)
 }
@@ -683,12 +722,15 @@ func ConfigFor(name string) ini.Section {
 // be loaded prior to calling this function.
 //
 // Args:
-//  name (string): The name of the connection to load from the config.  The
-//              name argument should be the connection name (everything
-//              right of the colon from the INI file)
+//
+//	name (string): The name of the connection to load from the config.  The
+//	            name argument should be the connection name (everything
+//	            right of the colon from the INI file)
+//
 // Returns:
-//  This function will return an instance of Node with the settings
-//  from the config instance.
+//
+//	This function will return an instance of Node with the settings
+//	from the config instance.
 func ConnectTo(name string) (*Node, error) {
 	section := ConfigFor(name)
 	if section == nil {
@@ -699,12 +741,20 @@ func ConnectTo(name string) (*Node, error) {
 	passwd := section["password"]
 	transport := section["transport"]
 	enablepwd := section["enablepwd"]
+	keyFile := section["keyfile"]
+	certFile := section["certfile"]
 	var port = UseDefaultPortNum
 	_, ok := section["port"]
 	if ok {
 		port, _ = strconv.Atoi(section["port"])
 	}
-	node, err := Connect(transport, host, username, passwd, port)
+	var node *Node
+	var err error
+	if transport == "https_certs" {
+		node, err = ConnectTLS(transport, host, keyFile, certFile, port)
+	} else {
+		node, err = Connect(transport, host, username, passwd, port)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -720,24 +770,39 @@ func ConnectTo(name string) (*Node, error) {
 // the arguments.  All arguments are optional with default values.
 //
 // Args:
-//  transport (string): Specifies the type of connection transport to use.
-//                   Valid values for the connection are socket, http_local,
-//                   http, and https.  https is the default.
-//  host (string): The IP addres or DNS host name of the connection device.
-//              The default value is 'localhost'
-//  username (string): The username to pass to the device to authenticate
-//                  the eAPI connection.   The default value is 'admin'
-//  password (string): The password to pass to the device to authenticate
-//                  the eAPI connection.  The default value is ''
-//  port (int): The TCP port of the endpoint for the eAPI connection.  If
-//              this keyword is not specified, the default value is
-//              automatically determined by the transport type.
-//              (http=80, https=443)
+//
+//	transport (string): Specifies the type of connection transport to use.
+//	                 Valid values for the connection are socket, http_local,
+//	                 http, and https.  https is the default.
+//	host (string): The IP addres or DNS host name of the connection device.
+//	            The default value is 'localhost'
+//	username (string): The username to pass to the device to authenticate
+//	                the eAPI connection.   The default value is 'admin'
+//	password (string): The password to pass to the device to authenticate
+//	                the eAPI connection.  The default value is ''
+//	port (int): The TCP port of the endpoint for the eAPI connection.  If
+//	            this keyword is not specified, the default value is
+//	            automatically determined by the transport type.
+//	            (http=80, https=443)
+//
 // Returns:
-//  An instance of Node object for the specified transport.
+//
+//	An instance of Node object for the specified transport.
 func Connect(transport string, host string, username string, passwd string,
 	port int) (*Node, error) {
 	conn, err := Connection(transport, host, username, passwd, port)
+	if err != nil {
+		return nil, err
+	}
+	node := &Node{conn: conn, autoRefresh: true}
+	// Populate the versionNumber for this node
+	node.getVersionNumber()
+
+	return node, nil
+}
+
+func ConnectTLS(transport string, host string, keyFile string, certFile string, port int) (*Node, error) {
+	conn, err := ConnectionTLS(transport, host, keyFile, certFile, port)
 	if err != nil {
 		return nil, err
 	}
@@ -754,21 +819,24 @@ func Connect(transport string, host string, username string, passwd string,
 // the arguments.  All arguments are optional with default values.
 //
 // Args:
-//  transport (string): Specifies the type of connection transport to use.
-//                   Valid values for the connection are socket, http_local,
-//                   http, and https.  https is the default.
-//  host (string): The IP addres or DNS host name of the connection device.
-//              The default value is 'localhost'
-//  username (string): The username to pass to the device to authenticate
-//                  the eAPI connection.   The default value is 'admin'
-//  password (string): The password to pass to the device to authenticate
-//                  the eAPI connection.  The default value is ''
-//  port (int): The TCP port of the endpoint for the eAPI connection.  If
-//              this keyword is not specified, the default value is
-//              automatically determined by the transport type.
-//              (http=80, https=443)
+//
+//	transport (string): Specifies the type of connection transport to use.
+//	                 Valid values for the connection are socket, http_local,
+//	                 http, and https.  https is the default.
+//	host (string): The IP addres or DNS host name of the connection device.
+//	            The default value is 'localhost'
+//	username (string): The username to pass to the device to authenticate
+//	                the eAPI connection.   The default value is 'admin'
+//	password (string): The password to pass to the device to authenticate
+//	                the eAPI connection.  The default value is ''
+//	port (int): The TCP port of the endpoint for the eAPI connection.  If
+//	            this keyword is not specified, the default value is
+//	            automatically determined by the transport type.
+//	            (http=80, https=443)
+//
 // Returns:
-//  An instance of EapiConnectionEntity object for the specified transport.
+//
+//	An instance of EapiConnectionEntity object for the specified transport.
 func Connection(transport string, host string, username string, passwd string,
 	port int) (EapiConnectionEntity, error) {
 	if transport == "" {
@@ -791,13 +859,20 @@ func Connection(transport string, host string, username string, passwd string,
 	return obj, nil
 }
 
+func ConnectionTLS(transport string, host string, keyFile string, certFile string, port int) (EapiConnectionEntity, error) {
+	obj := NewHTTPSCertsEapiConnection(transport, host, keyFile, certFile, port)
+	return obj, nil
+}
+
 // expandPath expands out the '~' if specified within the path
 //
 // Args:
-//  path (string): path
+//
+//	path (string): path
 //
 // Returns:
-//  String with newly expanded path or "" with error
+//
+//	String with newly expanded path or "" with error
 func expandPath(path string) (string, error) {
 	var homeDir string
 
