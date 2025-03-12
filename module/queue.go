@@ -37,32 +37,34 @@ import "fmt"
 // ShowQueueMonitor represents "show queue-monitor length" output
 type ShowQueueMonitor struct {
 	Cmd                 string
-	ReportTime          float64  `json:"report_time"`
+	ReportTime          float64  `json:"reportTime"`
 	Warnings            string   `json:"warnings"`
-	BytesPerTxmpSegment uint     `json:"bytes_per_txmp_segment"`
-	GlobalHitCount      uint     `json:"global_hit_count"`
-	LanzEnabled         bool     `json:"lanz_enabled"`
-	PlatformName        string   `json:"platform_name"`
-	EntryList           []*Entry `json:"entry_list"`
+	BytesPerTxmpSegment uint     `json:"bytesPerTxmpSegment"`
+	GlobalHitCount      uint     `json:"globalHitCount"`
+	LanzEnabled         bool     `json:"lanzEnabled"`
+	PlatformName        string   `json:"platformName"`
+	EntryList           []*Entry `json:"entryList"`
 }
 
 // Entry is queueing event entry from the ShowQueueMonitor output:
 // Type       Time                    Intf(TC)           Queue         Duration      Ingress
-//                                                      Length                      Port-set
-//                                                      (bytes)       (usecs)
-//---------- ----------------------- --------------- ------------- ---------------- ------------------------------------------------
+//
+//	Length                      Port-set
+//	(bytes)       (usecs)
+//
+// ---------- ----------------------- --------------- ------------- ---------------- ------------------------------------------------
 // P          0:00:03.83243 ago       Et24/1(2)          41904         1000000       Et3/1,4/1,5/1,8/1,9/1,10/1,25/1,26/1,30/1
 type Entry struct {
-	EntryTimeUsecs              int64    `json:"entry_time_usecs"`
-	GlobalProtectionModeEnabled bool     `json:"global_protection_mode_enabled"`
-	EntryTime                   float64  `json:"entry_time"`
+	EntryTimeUsecs              int64    `json:"entryTimeUsecs"`
+	GlobalProtectionModeEnabled bool     `json:"globalProtectionModeEnabled"`
+	EntryTime                   float64  `json:"entryTime"`
 	Interface                   string   `json:"interface"`
 	Duration                    uint     `json:"duration"`
-	DurationUsecs               uint32   `json:"duration_usecs"`
-	EntryType                   string   `json:"entry_type"`
-	QueueLength                 uint32   `json:"queue_length"`
-	TrafficClass                uint     `json:"traffic_class"`
-	IngressPortSet              []string `json:"ingress_port_set"`
+	DurationUsecs               uint32   `json:"durationUsecs"`
+	EntryType                   string   `json:"entryType"`
+	QueueLength                 uint32   `json:"queueLength"`
+	TrafficClass                uint     `json:"trafficClass"`
+	IngressPortSet              []string `json:"ingressPortSet"`
 }
 
 func (l *ShowQueueMonitor) SetCmd(port string, limitBy string, limitValue int) {

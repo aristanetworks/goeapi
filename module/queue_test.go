@@ -17,7 +17,10 @@ func TestShowQueueMonitor_UnitTest(t *testing.T) {
 	dummyNode.SetConnection(dummyConnection)
 
 	show := Show(dummyNode)
-	showqueue, _ := show.ShowQueueMonitor("Et24")
+	showqueue, err := show.ShowQueueMonitor("Et24")
+	if err != nil {
+		t.Errorf("Error during Show Queue, %s", err)
+	}
 
 	type ShowQueueMonitor struct {
 		Cmd                 string
@@ -150,6 +153,10 @@ func TestShowQueueMonitor_UnitTest(t *testing.T) {
 		if tt.PlatformName != showqueue.PlatformName {
 			t.Errorf("Platform name doesn't match expected %s, got %s", tt.PlatformName, showqueue.PlatformName)
 		}
+		if len(entries) < len(tt.EntryList) {
+			t.Errorf("Expected at least %d entries, but got %d", len(tt.EntryList), len(entries))
+			continue
+		}
 		for idx, entry := range tt.EntryList {
 			if entry.EntryTime != entries[idx].EntryTime {
 				t.Errorf("Entry time does not match expected %f, got %f",
@@ -180,6 +187,10 @@ func TestShowQueueMonitor_UnitTest(t *testing.T) {
 		}
 		if tt.PlatformName != showqueue.PlatformName {
 			t.Errorf("Platform name doesn't match expected %s, got %s", tt.PlatformName, showqueue.PlatformName)
+		}
+		if len(entries) < len(tt.EntryList) {
+			t.Errorf("Expected at least %d entries, but got %d", len(tt.EntryList), len(entries))
+			continue
 		}
 		for idx, entry := range tt.EntryList {
 			if entry.EntryTime != entries[idx].EntryTime {
