@@ -49,7 +49,7 @@ import (
 // EapiConnectionEntity is an interface representing the ability to execute a
 // single json transaction, obtaining the Response for a given Request.
 type EapiConnectionEntity interface {
-	Execute(commands []interface{}, encoding string) (*JSONRPCResponse, error)
+	Execute(commands []interface{}, encoding string, version StringOrInt) (*JSONRPCResponse, error)
 	SetTimeout(to uint32)
 	SetDisableKeepAlive(disableKeepAlive bool)
 	Error() error
@@ -81,7 +81,7 @@ type EapiConnection struct {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *EapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, version StringOrInt) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
@@ -167,8 +167,8 @@ func (conn *EapiConnection) SetDisableKeepAlive(disableKeepAlive bool) {
 // entries both can be used. Returns []byte of the built JSON request.
 // Successful call returns err == nil.
 func buildJSONRequest(commands []interface{},
-	encoding string, reqid string) ([]byte, error) {
-	p := Parameters{1, commands, encoding}
+	encoding string, reqid string, version StringOrInt) ([]byte, error) {
+	p := Parameters{version, commands, encoding}
 
 	req := Request{"2.0", "runCmds", p, reqid}
 	data, err := json.Marshal(req)
@@ -273,12 +273,12 @@ func (conn *SocketEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *SocketEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, version StringOrInt) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()), version)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -356,12 +356,12 @@ func (conn *HTTPLocalEapiConnection) send(data []byte) (*JSONRPCResponse, error)
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPLocalEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, version StringOrInt) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()), version)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -465,12 +465,12 @@ func (conn *HTTPEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, version StringOrInt) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()), version)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err
@@ -592,12 +592,12 @@ func (conn *HTTPSEapiConnection) send(data []byte) (*JSONRPCResponse, error) {
 // Returns:
 //  pointer to JSONRPCResponse or error on failure
 func (conn *HTTPSEapiConnection) Execute(commands []interface{},
-	encoding string) (*JSONRPCResponse, error) {
+	encoding string, version StringOrInt) (*JSONRPCResponse, error) {
 	if conn == nil {
 		return &JSONRPCResponse{}, fmt.Errorf("No connection")
 	}
 	conn.ClearError()
-	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()))
+	data, err := buildJSONRequest(commands, encoding, strconv.Itoa(os.Getpid()), version)
 	if err != nil {
 		conn.SetError(err)
 		return &JSONRPCResponse{}, err

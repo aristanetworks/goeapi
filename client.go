@@ -63,6 +63,7 @@ type Node struct {
 	autoRefresh   bool
 	enablePasswd  string
 	versionNumber string
+	eAPIVersion   string
 }
 
 // GetConnection returns the EapiConnectionEntity
@@ -154,15 +155,18 @@ func (n *Node) Refresh() {
 //
 // Returns:
 //  Pointer to an EapiReqHandle or error on failure
-func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
+func GetHandle(n *Node, encoding string, version StringOrInt) (*EapiReqHandle, error) {
 	if strings.ToLower(encoding) != "json" &&
 		strings.ToLower(encoding) != "text" {
 		return nil, fmt.Errorf("Invalid encoding specified: %s", encoding)
 	}
+	if version == nil {
+		version = 1
+	}
 	if n == nil {
 		return nil, fmt.Errorf("Invalid node")
 	}
-	return &EapiReqHandle{node: n, encoding: encoding}, nil
+	return &EapiReqHandle{node: n, encoding: encoding, version:version}, nil
 }
 
 // GetHandle returns the EapiReqHandle for the connection.
@@ -172,8 +176,11 @@ func GetHandle(n *Node, encoding string) (*EapiReqHandle, error) {
 //
 // Returns:
 //  Pointer to an EapiReqHandle or error on failure
-func (n *Node) GetHandle(encoding string) (*EapiReqHandle, error) {
-	return GetHandle(n, encoding)
+func (n *Node) GetHandle(encoding string, version ...StringOrInt) (*EapiReqHandle, error) {
+	if version == nil {
+		return GetHandle(n, encoding, 1)
+	} 
+	return GetHandle(n, encoding, version[0])
 }
 
 // GetConfig retrieves the config from the node.
@@ -373,7 +380,7 @@ func (n *Node) RunCommands(commands []string,
 		cmds = cmdsToInterface(commands)
 	}
 
-	result, err := n.conn.Execute(cmds, encoding)
+	result, err := n.conn.Execute(cmds, encoding, n.eAPIVersion)
 	if err != nil {
 		return nil, err
 	}
