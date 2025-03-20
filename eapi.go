@@ -141,9 +141,8 @@ func (handle *EapiReqHandle) getNode() (*Node, error) {
 	return handle.node, nil
 }
 
-// AddCommandStr adds a command string with specified EapiCommand type to the
-// command block list for this EapiReqHandle.
-func AddCommandStr(handle *EapiReqHandle, command string, v EapiCommand) error {
+// commandCheck verifies command and handle are ok to be added
+func commandCheck(handle *EapiReqHandle, command string) error {
 	if err := handle.checkHandle(); err != nil {
 		return err
 	}
@@ -156,6 +155,16 @@ func AddCommandStr(handle *EapiReqHandle, command string, v EapiCommand) error {
 		handle.err = fmt.Errorf("Limit of %d commands reached for AddCommand",
 			maxCmdBuflen)
 		return handle.err
+	}
+	return nil
+}
+
+// AddCommandStr adds a command string with specified EapiCommand type to the
+// command block list for this EapiReqHandle.
+func AddCommandStr(handle *EapiReqHandle, command string, v EapiCommand) error {
+	err := commandCheck(handle, command)
+	if err != nil {
+		return err
 	}
 	cmd := commandBlock{command: command, EapiCommand: v}
 	handle.eapiCommands = append(handle.eapiCommands, cmd)
@@ -180,6 +189,32 @@ func AddCommand(handle *EapiReqHandle, v EapiCommand) error {
 func (handle *EapiReqHandle) AddCommand(v EapiCommand) error {
 	command := v.GetCmd()
 	return AddCommandStr(handle, command, v)
+}
+
+// AddCommandRevisionStr adds a command string with specified EapiCommand type and
+// revision to the command block list for this EapiReqHandle.
+func AddCommandWithRevisionStr(handle *EapiReqHandle, command string, revision int, v EapiCommand) error {
+	err := commandCheck(handle, command)
+	if err != nil {
+		return err
+	}
+
+	type RevisionCommand struct {
+		Cmd      string `json:"cmd"`
+		Revision int    `json:"revision"`
+	}
+
+	cmd := RevisionCommand{Cmd: command, Revision: revision}
+	cmdBlock := commandBlock{command: cmd, EapiCommand: v}
+	handle.eapiCommands = append(handle.eapiCommands, cmdBlock)
+	return nil
+}
+
+// AddCommandRevision adds a pre-defined EapiCommand type of specified revsion
+// to the command block list for this EapiReqHandle.
+func (handle *EapiReqHandle) AddCommandWithRevsion(v EapiCommand, revision int) error {
+	command := v.GetCmd()
+	return AddCommandWithRevisionStr(handle, command, revision, v)
 }
 
 // getAllCommands iterates through the list of command blocks
@@ -251,7 +286,7 @@ func (handle *EapiReqHandle) Call() error {
 	commands := handle.getAllCommands()
 
 	jsonrsp, err := handle.node.conn.Execute(commands, handle.encoding)
-        
+
 	if err != nil {
 		return err
 	}
@@ -317,12 +352,12 @@ func (handle *EapiReqHandle) parseResponse(resp *JSONRPCResponse) error {
 			continue
 		}
 
-                d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ TagName: "json", Result: cmd.EapiCommand })
-                if err != nil {
+		d, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{TagName: "json", Result: cmd.EapiCommand})
+		if err != nil {
 			return err
-                } 
+		}
 
-                err = d.Decode(result)
+		err = d.Decode(result)
 		if err != nil {
 			return err
 		}
