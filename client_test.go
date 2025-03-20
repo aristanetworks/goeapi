@@ -503,8 +503,12 @@ func TestClientConnectTLSDefaultPort_UnitTest(t *testing.T) {
 	}
 
 	for idx, tt := range tests {
+		pathToKeyFile := GetFixture("client.key")
+		pathToCertFile := GetFixture("client.cert")
+		pathToCACertFile := GetFixture("ca.cert")
+
 		// 1.1.1.2 is assumed to be an unreachable bogus address
-		_, err := ConnectTLS(tt.proto, "1.1.1.2", "admin", "admin", tt.port)
+		_, err := ConnectTLS(tt.proto, "1.1.1.2", pathToKeyFile, pathToCertFile, pathToCACertFile, tt.port)
 		if err != nil {
 			t.Fatalf("Test[%d] %s. Error in connect: err:%#v", idx, tt.descr, err)
 		}
