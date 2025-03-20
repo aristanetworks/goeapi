@@ -464,12 +464,14 @@ type fn func(transport string, host string, username string,
 	password string, port int) EapiConnectionEntity
 
 // transports provides the method
+// "https_certs" is also a transport method but it can't be found in the below map
+// as it is separately handled through ConnectTLS.
+// NewHTTPSCertsEapiConnection is the construtor method
 var transports = map[string]fn{
-	"socket":      NewSocketEapiConnection,
-	"http_local":  NewHTTPLocalEapiConnection,
-	"http":        NewHTTPEapiConnection,
-	"https":       NewHTTPSEapiConnection,
-	"https_certs": NewHTTPSCertsEapiConnection,
+	"socket":     NewSocketEapiConnection,
+	"http_local": NewHTTPLocalEapiConnection,
+	"http":       NewHTTPEapiConnection,
+	"https":      NewHTTPSEapiConnection,
 }
 
 // EapiConfig provides the instance for managing of eapi.conf file.
@@ -743,6 +745,10 @@ func ConnectTo(name string) (*Node, error) {
 	enablepwd := section["enablepwd"]
 	keyFile := section["keyfile"]
 	certFile := section["certfile"]
+
+	// CA Certificate file is optional
+	caCertFile := section["cacertfile"]
+
 	var port = UseDefaultPortNum
 	_, ok := section["port"]
 	if ok {
@@ -751,7 +757,7 @@ func ConnectTo(name string) (*Node, error) {
 	var node *Node
 	var err error
 	if transport == "https_certs" {
-		node, err = ConnectTLS(transport, host, keyFile, certFile, port)
+		node, err = ConnectTLS(transport, host, keyFile, certFile, caCertFile, port)
 	} else {
 		node, err = Connect(transport, host, username, passwd, port)
 	}
@@ -801,8 +807,8 @@ func Connect(transport string, host string, username string, passwd string,
 	return node, nil
 }
 
-func ConnectTLS(transport string, host string, keyFile string, certFile string, port int) (*Node, error) {
-	conn, err := ConnectionTLS(transport, host, keyFile, certFile, port)
+func ConnectTLS(transport, host, keyFile, certFile, caCertFile string, port int) (*Node, error) {
+	conn, err := ConnectionTLS(transport, host, keyFile, certFile, caCertFile, port)
 	if err != nil {
 		return nil, err
 	}
@@ -859,8 +865,8 @@ func Connection(transport string, host string, username string, passwd string,
 	return obj, nil
 }
 
-func ConnectionTLS(transport string, host string, keyFile string, certFile string, port int) (EapiConnectionEntity, error) {
-	obj := NewHTTPSCertsEapiConnection(transport, host, keyFile, certFile, port)
+func ConnectionTLS(transport, host, keyFile, certFile, caCertFile string, port int) (EapiConnectionEntity, error) {
+	obj := NewHTTPSCertsEapiConnection(transport, host, keyFile, certFile, caCertFile, port)
 	return obj, nil
 }
 

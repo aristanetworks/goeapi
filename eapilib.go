@@ -660,28 +660,30 @@ func (conn *HTTPSEapiConnection) enableCertificateVerification() {
 // HTTPSCertsEapiConnection is an EapiConnection suited for HTTPS connection
 type HTTPSCertsEapiConnection struct {
 	EapiConnection
-	path     string // Request URL
-	keyFile  string // Path to the Client Private Key file
-	certFile string // Path to the Client Certificate file
+	path       string // Request URL
+	keyFile    string // Path to the Client Private Key file
+	certFile   string // Path to the Client Certificate file
+	caCertFile string // Path to the CA certificate file
 }
 
 // NewHTTPSCertsEapiConnection initializes an HTTPSCertsEapiConnection.
 //
 // Args:
 //
-//	transport (string): The transport to use to create the instance,
-//						which is "https_certs"
-//	host (string): The IP address or DNS host name of the connection device.
-//	keyFile(string): The path to the keyfile which will be pass to the device
-//	                 to authenticate the eAPI connection.
-//	certFile(string): The path to the certFile which will be pass to the device
-//	                  to authenticate the eAPI connection.
-//	port(int): The TCP port of the endpoint for the eAPI connection.
+//		transport (string): The transport to use to create the instance,
+//							which is "https_certs"
+//		host (string): The IP address or DNS host name of the connection device.
+//		keyFile(string): The path to the Client's Private Key file which will be pass to the device
+//		certFile(string): The path to the Client's Certificate which will be pass to the device
+//		                  to authenticate the eAPI connection.
+//		caCertFile(string): The path to the CA Certificate file which will be used to verify against's
+//	        				switch's certificate.
+//		port(int): The TCP port of the endpoint for the eAPI connection.
 //
 // Returns:
 //
 //	Newly created HTTPSCertsEapiConnection
-func NewHTTPSCertsEapiConnection(transport string, host string, keyFile string, certFile string, port int) EapiConnectionEntity {
+func NewHTTPSCertsEapiConnection(transport, host, keyFile, certFile, caCertFile string, port int) EapiConnectionEntity {
 	if port == UseDefaultPortNum {
 		port = DefaultHTTPSPort
 	}
@@ -689,7 +691,7 @@ func NewHTTPSCertsEapiConnection(transport string, host string, keyFile string, 
 
 	conn := EapiConnection{transport: transport, host: host, port: port, timeOut: 60, disableKeepAlive: false}
 
-	return &HTTPSCertsEapiConnection{path: path, EapiConnection: conn, keyFile: keyFile, certFile: certFile}
+	return &HTTPSCertsEapiConnection{path: path, EapiConnection: conn, keyFile: keyFile, certFile: certFile, caCertFile: caCertFile}
 }
 
 // send the eAPI request to the destination node
@@ -720,12 +722,27 @@ func (conn *HTTPSCertsEapiConnection) send(data []byte) (*JSONRPCResponse, error
 		return nil, err
 	}
 
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            x509.NewCertPool(),
+	}
+
+	// Handle CA Certificate if provided
+	if conn.caCertFile != "" {
+		caCert, err := os.ReadFile(conn.caCertFile)
+		if err != nil {
+			conn.SetError(err)
+			return nil, fmt.Errorf("failed to read CA certificate file: %v", err)
+		}
+		if ok := tlsConfig.RootCAs.AppendCertsFromPEM(caCert); !ok {
+			conn.SetError(fmt.Errorf("failed to append CA certificate to pool"))
+			return nil, fmt.Errorf("failed to append CA certificate to pool")
+		}
+	}
+
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-			Certificates:       []tls.Certificate{cert},
-			RootCAs:            x509.NewCertPool(),
-		},
+		TLSClientConfig:   tlsConfig,
 		DisableKeepAlives: conn.disableKeepAlive,
 	}
 	client := &http.Client{
