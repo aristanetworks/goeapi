@@ -377,8 +377,11 @@ Goeapi supports certificate-based authentication for eAPI connections, eliminati
 host=dut
 keyfile=/path/to/keyfile
 certfile=/path/to/certificatefile
+cacertfile=/path/to/cacertificatefile
 transport=https_certs
 ```
+
+Note: CA Certificate file is optional.
 
 # Building Local Documentation
 
