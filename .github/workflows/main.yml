@@ -1,0 +1,20 @@
+---
+name: CI
+on: [pull_request, workflow_dispatch]
+jobs:
+  build:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.0
+      - name: Display the version of go that we have installed
+        run: go version
+      - name: unittest
+        run: make unittest
