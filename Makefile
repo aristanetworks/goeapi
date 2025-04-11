@@ -31,6 +31,9 @@ systest:
 unittest:
 	$(GOFOLDERS) | xargs $(GO) test $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
+unittestwithcover:
+	$(GOFOLDERS) | xargs $(GO) test -cover $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
+
 COVER_PKGS := `find . -name '*_test.go' ! -path "./.git/*" ! -path "./Godeps/*" ! -path "./vendor/*" | xargs -I{} dirname {} | sort -u`
 coverdata:
 	echo 'mode: $(COVER_MODE)' > $(COVER_TMPFILE)
