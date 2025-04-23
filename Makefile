@@ -34,6 +34,11 @@ unittest:
 unittestwithcover:
 	$(GOFOLDERS) | xargs $(GO) test -cover $(GOTEST_FLAGS) -timeout=$(TEST_TIMEOUT) -run UnitTest$
 
+# To create a new release: `make release VERSION=v0.2.0`
+release:
+	git tag $(VERSION)
+	git push origin $(VERSION)
+
 COVER_PKGS := `find . -name '*_test.go' ! -path "./.git/*" ! -path "./Godeps/*" ! -path "./vendor/*" | xargs -I{} dirname {} | sort -u`
 coverdata:
 	echo 'mode: $(COVER_MODE)' > $(COVER_TMPFILE)
